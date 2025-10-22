@@ -1,0 +1,9 @@
+rt_bi_eventifier:
+  eventifier:
+    ros__parameters:
+      render: True
+      profile: False
+      renderModules:
+        - c_graph
+        - ctcd
+        - i_graph

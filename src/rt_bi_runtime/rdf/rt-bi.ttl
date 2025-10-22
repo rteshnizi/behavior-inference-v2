@@ -1,0 +1,129 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://rezateshnizi.com/rt-bi/> a owl:Ontology ;
+	dc:title "The vocabulary used in RT Behavior Inference." ;
+	dc:date "2024-05-15" ;
+	dc:description "This is the RDF Schema for the terms in RT Behavior Automata, defined in the dissertation of Reza Teshnizi." .
+
+@prefix class: <https://rezateshnizi.com/rt-bi/class#> .
+# region [CLASSES]
+class:X a rdfs:Class .
+class:Y a rdfs:Class .
+class:Pt a rdfs:Class ;
+	rdfs:comment "Has an X and a Y" .
+class:PtSeq a rdfs:Class ;
+	rdfs:subClassOf rdf:Seq ;
+	rdfs:comment "To indicate to a human reader that the members are ordered points." .
+class:Vertex a rdfs:Class ;
+	rdfs:subClassOf rdfs:ContainerMembershipProperty ;
+	rdfs:subPropertyOf rdfs:member ;
+	rdfs:domain class:PtSeq ;
+	rdfs:range class:Pt ;
+	rdfs:comment "A class:Pt whose order of placement in the container owning the point matters." .
+class:Polygon a rdfs:Class .
+class:Time a rdfs:Class .
+class:Interval a rdfs:Class .
+class:Subject a rdfs:Class .
+class:SpaceTime a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The class of Regular Space-Time Set specifications." .
+class:Material a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The class of material specifications." .
+# endregion [CLASSES]
+
+# region [PtSeq Members]
+class:v_101 a class:Vertex .
+class:v_102 a class:Vertex .
+class:v_103 a class:Vertex .
+class:v_104 a class:Vertex .
+class:v_105 a class:Vertex .
+class:v_106 a class:Vertex .
+class:v_107 a class:Vertex .
+class:v_108 a class:Vertex .
+class:v_109 a class:Vertex .
+class:v_110 a class:Vertex .
+class:v_111 a class:Vertex .
+class:v_112 a class:Vertex .
+class:v_113 a class:Vertex .
+class:v_114 a class:Vertex .
+class:v_115 a class:Vertex .
+class:v_116 a class:Vertex .
+class:v_117 a class:Vertex .
+class:v_118 a class:Vertex .
+class:v_119 a class:Vertex .
+class:v_120 a class:Vertex .
+# endregion [PtSeq Members]
+
+@prefix property: <https://rezateshnizi.com/rt-bi/property#> .
+# region [SUBJECT PROPS]
+property:name a rdfs:label ;
+	rdfs:domain class:Subject ;
+	rdfs:range xsd:string ;
+	rdfs:comment "A name for this object." .
+property:color a rdf:Property ;
+	rdfs:domain class:Subject ;
+	rdfs:range xsd:string ;
+	rdfs:comment "Color to describe this area (and use in render)." .
+property:channel a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range xsd:string ;
+	rdfs:comment "The ID of the ROS communication channel publishing updates for this SpaceTime." .
+# endregion [SUBJECT PROPS]
+
+# region [SPATIAL PROPS]
+property:vertices a rdf:Property ;
+	rdfs:domain class:Polygon ;
+	rdfs:range class:PtSeq ;
+	rdfs:comment "The vertices of a polygon." .
+property:coord a rdf:Property ;
+	rdfs:domain class:Pt ;
+	rdfs:range class:X ;
+	rdfs:range class:Y ;
+	rdfs:comment "A real axis coordinate (x, y, etc.)." .
+property:x_val a rdf:value ;
+	rdfs:domain class:X ;
+	rdfs:range xsd:double ;
+	rdfs:comment "Some x value." .
+property:y_val a rdf:value ;
+	rdfs:domain class:Y ;
+	rdfs:range xsd:double ;
+	rdfs:comment "Some y value." .
+property:geometry a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range class:Polygon .
+property:material a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range class:Material ;
+	rdfs:comment "The range of this property is a Material specification." .
+# endregion [SPATIAL PROPS]
+
+# region [TEMPORAL PROPS]
+property:t_val a rdf:value ;
+	rdfs:domain class:Time ;
+	rdfs:range xsd:double ;
+	rdfs:comment "A time value in Seconds." .
+property:min a rdf:Property ;
+	rdfs:domain class:Interval ;
+	rdfs:range class:Time ;
+	rdfs:comment "The min bound of a time interval." .
+property:max a rdf:Property ;
+	rdfs:domain class:Interval ;
+	rdfs:range class:Time ;
+	rdfs:comment "The max bound of a time interval." .
+property:include_min a rdf:Property ;
+	rdfs:domain class:Interval ;
+	rdfs:range xsd:boolean ;
+	rdfs:comment "Whether the min bound is included in the interval" .
+property:include_max a rdf:Property ;
+	rdfs:domain class:Interval ;
+	rdfs:range xsd:boolean ;
+	rdfs:comment "Whether the max bound is included in the interval" .
+property:interval a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range class:Interval .
+# endregion [TEMPORAL PROPS]

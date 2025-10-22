@@ -1,0 +1,22 @@
+{
+	"recommendations": [
+		"njpwerner.autodocstring",
+		"mgesbert.python-path",
+		"ms-python.isort",
+		"ms-python.vscode-pylance",
+		"ms-iot.vscode-ros",
+		"irongeek.vscode-env",
+		"streetsidesoftware.code-spell-checker",
+		"maptz.camelcasenavigation",
+		"wmaurer.change-case",
+		"tyriar.sort-lines",
+		"redhat.vscode-yaml",
+		"daohong-emilio.yash",
+		"redhat.vscode-xml",
+		"ms-python.python",
+		"maattdd.gitless",
+		"stardog-union.stardog-rdf-grammars",
+		"stardog-union.vscode-langserver-turtle",
+		"zazuko.vscode-rdf-sketch"
+	]
+}

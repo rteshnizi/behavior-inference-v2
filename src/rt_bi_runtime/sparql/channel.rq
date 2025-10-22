@@ -1,0 +1,25 @@
+PREFIX class:    <https://rezateshnizi.com/rt-bi/class#>
+PREFIX dc:       <http://purl.org/dc/elements/1.1/>
+PREFIX interval: <https://rezateshnizi.com/tower_bridge/intervals#>
+PREFIX material: <https://rezateshnizi.com/tower_bridge/materials#>
+PREFIX owl:      <http://www.w3.org/2002/07/owl#>
+PREFIX polygon:  <https://rezateshnizi.com/tower_bridge/polys#>
+PREFIX pt:       <https://rezateshnizi.com/tower_bridge/pts#>
+PREFIX rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX set:      <https://rezateshnizi.com/tower_bridge/sets#>
+PREFIX property: <https://rezateshnizi.com/rt-bi/property#>
+PREFIX t:        <https://rezateshnizi.com/tower_bridge/ts#>
+PREFIX x:        <https://rezateshnizi.com/tower_bridge/xs#>
+PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
+PREFIX y:        <https://rezateshnizi.com/tower_bridge/ys#>
+
+SELECT ?regularSetId ?channelId
+WHERE {
+	?regularSetId a/rdfs:subClassOf* class:SpaceTime .
+	VALUES ?regularSetId {
+		# ID VALUES #############################
+	}
+	OPTIONAL { ?regularSetId property:channel ?channelId . }
+}
+ORDER BY ?regularSetId
