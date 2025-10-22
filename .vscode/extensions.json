@@ -4,7 +4,7 @@
 		"mgesbert.python-path",
 		"ms-python.isort",
 		"ms-python.vscode-pylance",
-		"ms-iot.vscode-ros",
+		"ranch-hand-robotics.rde-pack",
 		"irongeek.vscode-env",
 		"streetsidesoftware.code-spell-checker",
 		"maptz.camelcasenavigation",
