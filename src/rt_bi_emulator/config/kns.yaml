@@ -2,7 +2,7 @@ rt_bi_emulator:
   kn2:
     ros__parameters:
       render: True
-      id: "https://rezateshnizi.com/tower_bridge/defintion/king"
+      id: "https://rezateshnizi.com/ex2-map/defintion/king"
       updateInterval: 0.25
       timesSecs:
         - 0.00

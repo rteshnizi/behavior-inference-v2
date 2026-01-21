@@ -1,0 +1,165 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://rezateshnizi.com/rt-bi-v2/> a owl:Ontology ;
+	dc:title "The vocabulary used in RT Behavior Inference version 2." ;
+	dc:date "2025-10-22" ;
+	dc:description "This is the RDF Schema for the terms in RT Behavior Automata." .
+
+@prefix class: <https://rezateshnizi.com/rt-bi-v2/class#> .
+@prefix property: <https://rezateshnizi.com/rt-bi-v2/property#> .
+
+# region [CLASSES]
+class:Coordinate a rdfs:Class .
+class:X a rdfs:Class ; rdfs:subClassOf class:Coordinate .
+class:Y a rdfs:Class ; rdfs:subClassOf class:Coordinate .
+class:Pt a rdfs:Class ;
+	rdfs:comment "Has an X and a Y" .
+class:PtSeq a rdfs:Class ;
+	rdfs:subClassOf rdf:Seq ;
+	rdfs:comment "A sequence, to indicate to a human reader that the members are ordered points." .
+class:Polygon a rdfs:Class .
+class:Subject a rdfs:Class .
+class:Time a rdfs:Class ;
+rdfs:subClassOf class:Subject .
+class:Interval a rdfs:Class ;
+	rdfs:subClassOf class:Subject .
+class:TrackedEntity a rdfs:Class ;
+	 rdfs:subClassOf class:Subject ;
+	rdfs:comment "A real-world entity being tracked; may have multiple Target hypotheses." .
+class:SpaceTime a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The class of Regular Space-Time Set specifications." .
+class:Target a rdfs:Class ;
+	rdfs:subClassOf class:SpaceTime ;
+	rdfs:comment "The class of target specifications. This is used to specify target attributes." .
+# endregion [CLASSES]
+
+# region [SPACE-TIME SPEC]
+class:Material a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The class of material specifications." .
+# endregion [SPACE-TIME PROPS]
+
+# region [TARGET SPEC]
+class:Transportation a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The the way this target moves; i.e., mode of transportation." .
+class:Gender a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The Gender of the target." .
+class:AgeGroup a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The Age Group of the target." .
+property:min_age a rdf:Property ;
+	rdfs:domain class:AgeGroup ;
+	rdfs:range xsd:decimal .
+property:max_age a rdf:Property ;
+	rdfs:domain class:AgeGroup ;
+	rdfs:range xsd:decimal .
+# endregion [SPACE-TIME PROPS]
+
+# region [SUBJECT PROPS]
+property:name a rdf:Property ;
+	rdfs:subPropertyOf rdfs:label ;
+	rdfs:domain class:Subject ;
+	rdfs:range xsd:string ;
+	rdfs:comment "A name for this subject." .
+property:color a rdf:Property ;
+	rdfs:domain class:Subject ;
+	rdfs:range xsd:string ;
+	rdfs:comment "Color to describe this area (and use in render)." .
+# endregion [SUBJECT PROPS]
+
+# region [SPATIAL PROPS]
+property:vertices a rdf:Property ;
+	rdfs:domain class:Polygon ;
+	rdfs:range class:PtSeq ;
+	rdfs:comment "The vertices of a polygon." .
+property:coord a rdf:Property ;
+	rdfs:domain class:Pt ;
+	rdfs:range class:Coordinate ;
+	rdfs:comment "A real axis coordinate (x, y, etc.)." .
+property:x_val a rdf:Property ;
+	rdfs:subPropertyOf rdf:value ;
+	rdfs:domain class:X ;
+	rdfs:range xsd:double ;
+	rdfs:comment "Some x value." .
+property:y_val a rdf:Property ;
+	rdfs:subPropertyOf rdf:value ;
+	rdfs:domain class:Y ;
+	rdfs:range xsd:double ;
+	rdfs:comment "Some y value." .
+property:geometry a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range class:Polygon ;
+	rdfs:comment "The range of this property describes the geometry of a connected component." .
+property:material a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range class:Material ;
+	rdfs:comment "The range of this property is a Material specification." .
+# endregion [SPATIAL PROPS]
+
+# region [TEMPORAL PROPS]
+property:t_val a rdf:Property ;
+	rdfs:subPropertyOf rdf:value ;
+	rdfs:domain class:Time ;
+	rdfs:range xsd:double ;
+	rdfs:comment "A time value in Seconds." .
+property:min a rdf:Property ;
+	rdfs:domain class:Interval ;
+	rdfs:range class:Time ;
+	rdfs:comment "The min bound of a time interval." .
+property:max a rdf:Property ;
+	rdfs:domain class:Interval ;
+	rdfs:range class:Time ;
+	rdfs:comment "The max bound of a time interval." .
+property:include_min a rdf:Property ;
+	rdfs:domain class:Interval ;
+	rdfs:range xsd:boolean ;
+	rdfs:comment "Whether the min bound is included in the interval" .
+property:include_max a rdf:Property ;
+	rdfs:domain class:Interval ;
+	rdfs:range xsd:boolean ;
+	rdfs:comment "Whether the max bound is included in the interval" .
+property:interval a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range class:Interval .
+# endregion [TEMPORAL PROPS]
+
+# region [SPACE-TIME PROPS]
+property:channel a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range xsd:string ;
+	rdfs:comment "The ID of the ROS communication channel publishing updates for this SpaceTime." .
+# endregion [SPACE-TIME PROPS]
+
+# region [TARGET PROPS]
+property:derived_from a rdf:Property ;
+	rdfs:domain class:Target ;
+	rdfs:range  class:Target ;
+	rdfs:comment "Refinement relation between hypotheses: child is a more specific hypothesis." .
+property:diameter a rdf:Property ;
+	rdfs:domain class:Target ;
+	rdfs:range xsd:decimal ;
+	rdfs:comment "The estimated diameter of a target." .
+property:transportation a rdf:Property ;
+	rdfs:domain class:Target ;
+	rdfs:range class:Transportation ;
+	rdfs:comment "The range of this property is a Transportation specification." .
+property:age_group a rdf:Property ;
+	rdfs:domain class:Target ;
+	rdfs:range class:AgeGroup ;
+	rdfs:comment "The range of this property is an AgeGroup specification." .
+property:gender a rdf:Property ;
+	rdfs:domain class:Target ;
+	rdfs:range class:Gender ;
+	rdfs:comment "The range of this property is a Gender specification." .
+property:hypothesis_of a rdf:Property ;
+	rdfs:domain class:Target ;
+	rdfs:range  class:TrackedEntity ;
+	rdfs:comment "Indicates that this Target is a hypothesis for a given tracked entity." .
+# endregion [TARGET PROPS]

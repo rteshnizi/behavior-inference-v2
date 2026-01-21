@@ -1,4 +1,12 @@
 {
+	"remote.extensionKind": {
+		"GitHub.copilot": [
+			"ui"
+		],
+		"GitHub.copilot-chat": [
+			"ui"
+		],
+	},
 	"python.autoComplete.extraPaths": [
 		"${workspaceFolder}/src/rt_bi_behavior",
 		"${workspaceFolder}/src/rt_bi_commons",
@@ -162,5 +170,5 @@
 	"autoDocstring.docstringFormat": "one-line-sphinx",
 	"python.analysis.autoFormatStrings": true,
 	"python.testing.autoTestDiscoverOnSaveEnabled": false,
-	"ros.distro": "humble",
+	"ROS2.distro": "humble",
 }

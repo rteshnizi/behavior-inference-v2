@@ -16,7 +16,6 @@
 		"ms-python.python",
 		"maattdd.gitless",
 		"stardog-union.stardog-rdf-grammars",
-		"stardog-union.vscode-langserver-turtle",
-		"zazuko.vscode-rdf-sketch"
+		"stardog-union.vscode-langserver-turtle"
 	]
 }

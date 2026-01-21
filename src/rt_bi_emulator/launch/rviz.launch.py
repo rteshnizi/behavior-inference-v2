@@ -16,7 +16,7 @@ def generate_launch_description():
 			name="rviz2_map",
 			arguments=[
 				"-d",
-				[os.path.join(shareDir, "config", "rviz.live.rviz")],
+				[os.path.join(shareDir, "config", "rviz.live.2.rviz")],
 				"--ros-args",
 				"--log-level",
 				"warn",

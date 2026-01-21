@@ -142,9 +142,11 @@ class FusekiInterface:
 
 	def __sendQuery(self, query: str) -> SparqlResultHelper:
 		Ros.Log(f"Sending Query to Fuseki:\n{query}")
-		r = requests.post(self.__SPARQL_URL, data={ "query": query })
+		response = requests.post(self.__SPARQL_URL, data={ "query": query })
 		try:
-			return SparqlResultHelper(r)
+			parsedResponse = SparqlResultHelper(response)
+			Ros.Log(f"Response:\n{parsedResponse}")
+			return parsedResponse
 		except Exception as e:
 			Ros.Logger().error(f"SPARQL request failed with the following message: {repr(e)}")
 			raise e

@@ -8,7 +8,7 @@ from rt_bi_core.Spatial import MapPolygon
 class MapRenderer(RegionsSubscriber):
 	""" This Node listens to all static and dynamic map region updates and renders them. """
 	def __init__(self, **kwArgs):
-		newKw = { "node_name": "renderer_map", "loggingSeverity": Ros.LoggingSeverity.INFO, **kwArgs}
+		newKw = { "node_name": "renderer_map", "loggingSeverity": Ros.LoggingSeverity.WARN, **kwArgs}
 		super().__init__(**newKw)
 		RtBiInterfaces.subscribeToProjectiveMap(self, self.enqueueUpdate)
 		RtBiInterfaces.subscribeToAffineMap(self, self.enqueueUpdate)

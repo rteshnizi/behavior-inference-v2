@@ -224,7 +224,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		self.__removeAllTokens()
 		self.__tokenCounter = 0
 		for nodeId in iGraph.nodes:
-			if cast(NodeId, nodeId).regionId.startswith("https://rezateshnizi.com/tower_bridge/defintion/av"): continue
+			if cast(NodeId, nodeId).regionId.startswith("https://rezateshnizi.com/ex2-map/defintion/av"): continue
 			token = self.__createToken([nodeId])
 			self.states[self.__start]["tokens"].append(token)
 		self.__updateStateLabel(self.__start)

@@ -16,7 +16,7 @@ def generate_launch_description():
 			name="rviz2_cg",
 			arguments=[
 				"-d",
-				[os.path.join(shareDir, "config", "rviz.cgr.rviz")],
+				[os.path.join(shareDir, "config", "rviz.cgr.2.rviz")],
 				"--ros-args",
 				"--log-level",
 				"warn",

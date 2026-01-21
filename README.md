@@ -9,108 +9,44 @@
 	- [Introduction](#introduction)
 	- [Demonstration](#demonstration)
 	- [Project Structure](#project-structure)
-	- [Installation](#installation)
+	- [Preparation](#preparation)
 	- [Usage](#usage)
-	- [Citation](#citation)
+		- [Running](#running)
+		- [Debugging](#debugging)
 	- [License](#license)
 
 ## Introduction
-This repository contains the code, data, and supplementary materials for my PhD dissertation titled
-**"A Practical Method of Behavior Estimation in Dynamic Robotic Surveillance Settings"**.
-The slide deck that I prepared for my defense session is available [here](/docs/derfense.pdf).
+Some nodes need a cold start to load initial data.
+The list of these nodes is specified in the constructor of [ColdStartManager](src/rt_bi_runtime/rt_bi_runtime/ColdStartManager.py) via `__awaitingColdStart` property.
 
-This work studies how a robotic system can recognize patterns in movements
-of a target based on formal specifications given by an end-user.
-Specifically, we treat cases in which a network of autonomous robots
-equipped with sensors are deployed in a dynamic environment and collect information
-for an end-user to determine whether an unpredictable target exhibits certain---normal or anomalous---behavior.
-We give an algorithmic solution to processing information streamed over extended periods of time about an environment with
-dynamic elements and partial observability.
-In realizing a practical solution, this dissertation contributes
-by addressing this problem on three fronts by answering the questions of:
-how to write formal specifications for motion-based behavior,
-what is involved in recognizing behavior using these specifications,
-and how to design a modular perception process to integrate models for behavior recognition.
+It then calls `__triggerNextColdStart` for each of them and awaits a response in `__onColdStartDone` from the respective node.
 
 ## Demonstration
-A video recording of the case study presented in the dissertation is linked below.
-
-[![Video Demonstration](https://img.youtube.com/vi/ccrulp8tqR4/0.jpg)](https://www.youtube.com/watch?v=ccrulp8tqR4)
+[WIP]
 
 ## Project Structure
 [WIP]
 
-<!-- - `data`: Contains raw and processed datasets.
-- `notebooks`: Jupyter notebooks for data exploration and analysis.
-- `src`: Source code for data processing, model training, and utilities.
-  - `data_processing`: Scripts for processing raw data.
-  - `models`: Implementation of machine learning models.
-  - `utils`: Utility functions.
-- `results`: Contains results from experiments.
-- `experiments`: Configuration files and scripts to run experiments. -->
-
-## Installation
+## Preparation
 [WIP]
-<!-- To set up the project, follow these steps:
-
-1. Clone the repository:
-	```bash
-	git clone https://github.com/yourusername/your-repo-name.git
-	cd your-repo-name
-	```
-
-2. Create a virtual environment:
-	```bash
-	python -m venv env
-	source env/bin/activate  # On Windows use `env\Scripts\activate`
-	```
-
-3. Install the required packages:
-	```bash
-	pip install -r requirements.txt
-	``` -->
+1. Setup Apache Jena
+2. Add the data from the [rdf](src/rt_bi_runtime/rdf) folder.
+3. Update the URL to Jena in [rdf.yaml](src/rt_bi_runtime/config/rdf.yaml)
+4. ...
 
 ## Usage
 [WIP]
-<!-- To run the experiments, you can use the following commands:
+### Running
+1. Run `./scripts/debug.launch.sh`. This will launch the following nodes:
+   1. `rt_bi_runtime` using `all.launch.py`
+   2. `rt_bi_behavior` using `ba.launch.py`
+   3. `rt_bi_emulator` using `map.launch.py`
+   4. ...
 
-1. **Preprocess Data:**
-	```bash
-	python src/data_processing/preprocess_data.py
-	```
-
-2. **Train Model:**
-	```bash
-	python src/models/train_model.py --config experiments/config.yaml
-	```
-
-3. **Evaluate Model:**
-	```bash
-	python src/models/evaluate_model.py --config experiments/config.yaml
-	``` -->
-
-<!-- Experiment configurations are stored in the `experiments` directory. Each configuration file contains the parameters for a specific experiment. To run an experiment, use:
-
-```bash
-python src/run_experiment.py --config experiments/experiment1.yaml -->
-
-## Citation
-If you use any part of this work in your research, please cite the dissertation using the following BibTeX entry:
-
-```bibtex
-@phdthesis{Teshnizi2024,
-  author       = {Reza H. Teshnizi},
-  title        = {A Practical Method of Behavior Estimation in Dynamic Robotic Surveillance Settings},
-  school       = {Texas A\&M University},
-  year         = {2024},
-  address      = {College Station, TX, USA},
-  type         = {PhD Dissertation},
-  month        = {August},
-}
-```
-You can also cite it as:
-
-> Reza H. Teshnizi, "A Practical Method of Behavior Estimation in Dynamic Robotic Surveillance Settings," PhD dissertation, Texas A&M University, 2024.
+### Debugging
+To use log statements, in the constructor of the node add
+`"loggingSeverity": Ros.LoggingSeverity.WARN`
+in the constructor of the node.
 
 ## License
 
