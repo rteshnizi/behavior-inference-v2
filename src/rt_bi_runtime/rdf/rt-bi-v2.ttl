@@ -27,30 +27,41 @@ class:Time a rdfs:Class ;
 rdfs:subClassOf class:Subject .
 class:Interval a rdfs:Class ;
 	rdfs:subClassOf class:Subject .
-class:TrackedEntity a rdfs:Class ;
-	 rdfs:subClassOf class:Subject ;
-	rdfs:comment "A real-world entity being tracked; may have multiple Target hypotheses." .
 class:SpaceTime a rdfs:Class ;
 	rdfs:subClassOf class:Subject ;
 	rdfs:comment "The class of Regular Space-Time Set specifications." .
 class:Target a rdfs:Class ;
 	rdfs:subClassOf class:SpaceTime ;
 	rdfs:comment "The class of target specifications. This is used to specify target attributes." .
-# endregion [CLASSES]
-
-# region [SPACE-TIME SPEC]
 class:Material a rdfs:Class ;
 	rdfs:subClassOf class:Subject ;
 	rdfs:comment "The class of material specifications." .
-# endregion [SPACE-TIME PROPS]
-
-# region [TARGET SPEC]
 class:Transportation a rdfs:Class ;
 	rdfs:subClassOf class:Subject ;
 	rdfs:comment "The the way this target moves; i.e., mode of transportation." .
-class:Gender a rdfs:Class ;
-	rdfs:subClassOf class:Subject ;
-	rdfs:comment "The Gender of the target." .
+# SPACE-TIME SPEC
+class:TraversabilityReq a rdfs:Class ;
+	rdfs:comment "The class of traversal constraint specifications." .
+# endregion [CLASSES]
+
+# endregion [SPACE-TIME PROPS]
+# Transportation requirements
+property:transportation_req a rdf:Property ;
+	rdfs:domain class:TraversabilityReq ;
+	rdfs:range class:Transportation ;
+	rdfs:comment "Allowed modes of transportation (can have multiple)" .
+# Size requirements
+property:max_diameter a rdf:Property ;
+	rdfs:domain class:TraversabilityReq ;
+	rdfs:range xsd:decimal ;
+	rdfs:comment "Maximum diameter (in meters) that can traverse this space" .
+property:min_clearance a rdf:Property ;
+	rdfs:domain class:TraversabilityReq ;
+	rdfs:range xsd:decimal ;
+	rdfs:comment "Maximum height requirement." .
+# endregion [SPACE-TIME PROPS]
+
+# region [TARGET SPEC]
 class:AgeGroup a rdfs:Class ;
 	rdfs:subClassOf class:Subject ;
 	rdfs:comment "The Age Group of the target." .
@@ -97,10 +108,10 @@ property:geometry a rdf:Property ;
 	rdfs:domain class:SpaceTime ;
 	rdfs:range class:Polygon ;
 	rdfs:comment "The range of this property describes the geometry of a connected component." .
-property:material a rdf:Property ;
+property:traversable_for a rdf:Property ;
 	rdfs:domain class:SpaceTime ;
-	rdfs:range class:Material ;
-	rdfs:comment "The range of this property is a Material specification." .
+	rdfs:range class:TraversabilityReq ;
+	rdfs:comment "Points to constraints that must be satisfied for a target to traverse this space" .
 # endregion [SPATIAL PROPS]
 
 # region [TEMPORAL PROPS]
@@ -138,15 +149,15 @@ property:channel a rdf:Property ;
 # endregion [SPACE-TIME PROPS]
 
 # region [TARGET PROPS]
-property:derived_from a rdf:Property ;
-	rdfs:domain class:Target ;
-	rdfs:range  class:Target ;
-	rdfs:comment "Refinement relation between hypotheses: child is a more specific hypothesis." .
 property:diameter a rdf:Property ;
 	rdfs:domain class:Target ;
 	rdfs:range xsd:decimal ;
-	rdfs:comment "The estimated diameter of a target." .
-property:transportation a rdf:Property ;
+	rdfs:comment "The target's diameter/width in meters." .
+property:height a rdf:Property ;
+	rdfs:domain class:Target ;
+	rdfs:range xsd:decimal ;
+	rdfs:comment "The target's height in meters" .
+property:transportation_mode a rdf:Property ;
 	rdfs:domain class:Target ;
 	rdfs:range class:Transportation ;
 	rdfs:comment "The range of this property is a Transportation specification." .
@@ -154,12 +165,8 @@ property:age_group a rdf:Property ;
 	rdfs:domain class:Target ;
 	rdfs:range class:AgeGroup ;
 	rdfs:comment "The range of this property is an AgeGroup specification." .
-property:gender a rdf:Property ;
+property:derived_from a rdf:Property ;
 	rdfs:domain class:Target ;
-	rdfs:range class:Gender ;
-	rdfs:comment "The range of this property is a Gender specification." .
-property:hypothesis_of a rdf:Property ;
-	rdfs:domain class:Target ;
-	rdfs:range  class:TrackedEntity ;
-	rdfs:comment "Indicates that this Target is a hypothesis for a given tracked entity." .
+	rdfs:range class:Target ;
+	rdfs:comment "Refinement relation between hypotheses: child is a more specific hypothesis." .
 # endregion [TARGET PROPS]

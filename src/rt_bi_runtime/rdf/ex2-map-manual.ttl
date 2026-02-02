@@ -1,0 +1,527 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix class: <https://rezateshnizi.com/rt-bi-v2/class#> .
+@prefix property: <https://rezateshnizi.com/rt-bi-v2/property#> .
+@prefix x: <https://rezateshnizi.com/ex2-map/xs#> .
+@prefix y: <https://rezateshnizi.com/ex2-map/ys#> .
+@prefix pt: <https://rezateshnizi.com/ex2-map/pts#> .
+@prefix polygon: <https://rezateshnizi.com/ex2-map/polys#> .
+@prefix t: <https://rezateshnizi.com/ex2-map/ts#> .
+@prefix interval: <https://rezateshnizi.com/ex2-map/intervals#> .
+@prefix material: <https://rezateshnizi.com/ex2-map/materials#> .
+@prefix transportation: <https://rezateshnizi.com/ex2-map/transportations#> .
+@prefix traversability: <https://rezateshnizi.com/ex2-map/traversability_reqs#> .
+@prefix target: <https://rezateshnizi.com/ex2-map/targets#> .
+@prefix age_group: <https://rezateshnizi.com/ex2-map/age_groups#> .
+@prefix set: <https://rezateshnizi.com/ex2-map/sets#> .
+
+# region X coordinates
+x:x0 a class:X ; property:x_val 0.0 .
+x:x1 a class:X ; property:x_val 300.0 .
+x:x2 a class:X ; property:x_val 700.0 .
+x:x3 a class:X ; property:x_val 1000.0 .
+x:x4 a class:X ; property:x_val 1050.0 .
+x:x5 a class:X ; property:x_val 1400.0 .
+x:x6 a class:X ; property:x_val 1600.0 .
+x:x7 a class:X ; property:x_val 2400.0 .
+x:x8 a class:X ; property:x_val 2750.0 .
+x:x9 a class:X ; property:x_val 2760.0 .
+x:x10 a class:X ; property:x_val 2800.0 .
+x:x11 a class:X ; property:x_val 2990.0 .
+x:x12 a class:X ; property:x_val 3000.0 .
+# endregion X coordinates
+
+# region Y coordinates
+y:y0 a class:Y ; property:y_val 0.0 .
+y:y1 a class:Y ; property:y_val 100.0 .
+y:y2 a class:Y ; property:y_val 500.0 .
+y:y3 a class:Y ; property:y_val 600.0 .
+y:y4 a class:Y ; property:y_val 900.0 .
+y:y5 a class:Y ; property:y_val 1100.0 .
+y:y6 a class:Y ; property:y_val 1300.0 .
+y:y7 a class:Y ; property:y_val 1450.0 .
+y:y8 a class:Y ; property:y_val 1460.0 .
+y:y9 a class:Y ; property:y_val 1500.0 .
+y:y10 a class:Y ; property:y_val 1600.0 .
+y:y11 a class:Y ; property:y_val 1650.0 .
+y:y12 a class:Y ; property:y_val 1700.0 .
+y:y13 a class:Y ; property:y_val 1750.0 .
+y:y14 a class:Y ; property:y_val 1790.0 .
+y:y15 a class:Y ; property:y_val 1800.0 .
+y:y16 a class:Y ; property:y_val 2000.0 .
+# endregion Y coordinates
+
+# region Points
+pt:pt0 a class:Pt ; property:coord x:x0 ; property:coord y:y0 .
+pt:pt1 a class:Pt ; property:coord x:x12 ; property:coord y:y0 .
+pt:pt2 a class:Pt ; property:coord x:x12 ; property:coord y:y16 .
+pt:pt3 a class:Pt ; property:coord x:x0 ; property:coord y:y16 .
+pt:pt4 a class:Pt ; property:coord x:x0 ; property:coord y:y4 .
+pt:pt5 a class:Pt ; property:coord x:x3 ; property:coord y:y4 .
+pt:pt6 a class:Pt ; property:coord x:x3 ; property:coord y:y5 .
+pt:pt7 a class:Pt ; property:coord x:x0 ; property:coord y:y5 .
+pt:pt8 a class:Pt ; property:coord x:x4 ; property:coord y:y4 .
+pt:pt9 a class:Pt ; property:coord x:x4 ; property:coord y:y5 .
+pt:pt10 a class:Pt ; property:coord x:x5 ; property:coord y:y4 .
+pt:pt11 a class:Pt ; property:coord x:x5 ; property:coord y:y5 .
+pt:pt12 a class:Pt ; property:coord x:x6 ; property:coord y:y4 .
+pt:pt13 a class:Pt ; property:coord x:x12 ; property:coord y:y4 .
+pt:pt14 a class:Pt ; property:coord x:x12 ; property:coord y:y5 .
+pt:pt15 a class:Pt ; property:coord x:x6 ; property:coord y:y5 .
+pt:pt16 a class:Pt ; property:coord x:x7 ; property:coord y:y1 .
+pt:pt17 a class:Pt ; property:coord x:x10 ; property:coord y:y1 .
+pt:pt18 a class:Pt ; property:coord x:x10 ; property:coord y:y2 .
+pt:pt19 a class:Pt ; property:coord x:x7 ; property:coord y:y2 .
+pt:pt20 a class:Pt ; property:coord x:x10 ; property:coord y:y9 .
+pt:pt21 a class:Pt ; property:coord x:x12 ; property:coord y:y9 .
+pt:pt22 a class:Pt ; property:coord x:x12 ; property:coord y:y13 .
+pt:pt23 a class:Pt ; property:coord x:x10 ; property:coord y:y13 .
+pt:pt24 a class:Pt ; property:coord x:x1 ; property:coord y:y6 .
+pt:pt25 a class:Pt ; property:coord x:x2 ; property:coord y:y6 .
+pt:pt26 a class:Pt ; property:coord x:x2 ; property:coord y:y12 .
+pt:pt27 a class:Pt ; property:coord x:x1 ; property:coord y:y12 .
+pt:pt28 a class:Pt ; property:coord x:x3 ; property:coord y:y0 .
+pt:pt29 a class:Pt ; property:coord x:x4 ; property:coord y:y0 .
+pt:pt30 a class:Pt ; property:coord x:x4 ; property:coord y:y2 .
+pt:pt31 a class:Pt ; property:coord x:x3 ; property:coord y:y2 .
+pt:pt32 a class:Pt ; property:coord x:x3 ; property:coord y:y3 .
+pt:pt33 a class:Pt ; property:coord x:x4 ; property:coord y:y3 .
+pt:pt34 a class:Pt ; property:coord x:x4 ; property:coord y:y16 .
+pt:pt35 a class:Pt ; property:coord x:x3 ; property:coord y:y16 .
+pt:pt36 a class:Pt ; property:coord x:x8 ; property:coord y:y7 .
+pt:pt37 a class:Pt ; property:coord x:x9 ; property:coord y:y7 .
+pt:pt38 a class:Pt ; property:coord x:x9 ; property:coord y:y11 .
+pt:pt39 a class:Pt ; property:coord x:x8 ; property:coord y:y11 .
+pt:pt40 a class:Pt ; property:coord x:x9 ; property:coord y:y15 .
+pt:pt41 a class:Pt ; property:coord x:x8 ; property:coord y:y15 .
+pt:pt42 a class:Pt ; property:coord x:x11 ; property:coord y:y7 .
+pt:pt43 a class:Pt ; property:coord x:x12 ; property:coord y:y7 .
+pt:pt44 a class:Pt ; property:coord x:x12 ; property:coord y:y15 .
+pt:pt45 a class:Pt ; property:coord x:x11 ; property:coord y:y15 .
+pt:pt46 a class:Pt ; property:coord x:x8 ; property:coord y:y14 .
+pt:pt47 a class:Pt ; property:coord x:x12 ; property:coord y:y14 .
+pt:pt48 a class:Pt ; property:coord x:x12 ; property:coord y:y8 .
+pt:pt49 a class:Pt ; property:coord x:x8 ; property:coord y:y8 .
+pt:pt50 a class:Pt ; property:coord x:x8 ; property:coord y:y10 .
+pt:pt51 a class:Pt ; property:coord x:x9 ; property:coord y:y10 .
+pt:pt52 a class:Pt ; property:coord x:x9 ; property:coord y:y8 .
+pt:pt53 a class:Pt ; property:coord x:x9 ; property:coord y:y14 .
+# endregion Points
+
+# region Polygons
+polygon:asphalt_1 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt0 ;
+		rdf:_2 pt:pt28 ;
+		rdf:_3 pt:pt5 ;
+		rdf:_4 pt:pt4 ;
+	] .
+
+polygon:asphalt_2 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt29 ;
+		rdf:_2 pt:pt1 ;
+		rdf:_3 pt:pt17 ;
+		rdf:_4 pt:pt16 ;
+		rdf:_5 pt:pt19 ;
+		rdf:_6 pt:pt8 ;
+	] .
+
+polygon:asphalt_3 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt1 ;
+		rdf:_2 pt:pt13 ;
+		rdf:_3 pt:pt8 ;
+		rdf:_4 pt:pt19 ;
+		rdf:_5 pt:pt18 ;
+		rdf:_6 pt:pt17 ;
+	] .
+
+polygon:asphalt_4 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt7 ;
+		rdf:_2 pt:pt6 ;
+		rdf:_3 pt:pt25 ;
+		rdf:_4 pt:pt24 ;
+		rdf:_5 pt:pt27 ;
+		rdf:_6 pt:pt3 ;
+	] .
+
+polygon:asphalt_5 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt6 ;
+		rdf:_2 pt:pt35 ;
+		rdf:_3 pt:pt3 ;
+		rdf:_4 pt:pt27 ;
+		rdf:_5 pt:pt26 ;
+		rdf:_6 pt:pt25 ;
+	] .
+
+polygon:asphalt_6 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt9 ;
+		rdf:_2 pt:pt14 ;
+		rdf:_3 pt:pt43 ;
+		rdf:_4 pt:pt36 ;
+		rdf:_5 pt:pt41 ;
+		rdf:_6 pt:pt44 ;
+		rdf:_7 pt:pt2 ;
+		rdf:_8 pt:pt34 ;
+	] .
+
+polygon:asphalt_7 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt52 ;
+		rdf:_2 pt:pt48 ;
+		rdf:_3 pt:pt21 ;
+		rdf:_4 pt:pt20 ;
+		rdf:_5 pt:pt23 ;
+		rdf:_6 pt:pt22 ;
+		rdf:_7 pt:pt47 ;
+		rdf:_8 pt:pt53 ;
+	] .
+
+polygon:river_1 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt4 ;
+		rdf:_2 pt:pt5 ;
+		rdf:_3 pt:pt6 ;
+		rdf:_4 pt:pt7
+	] .
+
+polygon:river_2 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt5 ;
+		rdf:_2 pt:pt8 ;
+		rdf:_3 pt:pt9 ;
+		rdf:_4 pt:pt6
+	] .
+
+polygon:river_3 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt8 ;
+		rdf:_2 pt:pt10 ;
+		rdf:_3 pt:pt11 ;
+		rdf:_4 pt:pt9
+	] .
+
+polygon:river_5 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt12 ;
+		rdf:_2 pt:pt13 ;
+		rdf:_3 pt:pt14 ;
+		rdf:_4 pt:pt15
+	] .
+
+polygon:bridge a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt10 ;
+		rdf:_2 pt:pt12 ;
+		rdf:_3 pt:pt15 ;
+		rdf:_4 pt:pt11
+	] .
+
+polygon:a a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt16 ;
+		rdf:_2 pt:pt17 ;
+		rdf:_3 pt:pt18 ;
+		rdf:_4 pt:pt19
+	] .
+
+polygon:b a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt20 ;
+		rdf:_2 pt:pt21 ;
+		rdf:_3 pt:pt22 ;
+		rdf:_4 pt:pt23
+	] .
+
+polygon:c a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt24 ;
+		rdf:_2 pt:pt25 ;
+		rdf:_3 pt:pt26 ;
+		rdf:_4 pt:pt27
+	] .
+
+polygon:wall_w_1 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt28 ;
+		rdf:_2 pt:pt29 ;
+		rdf:_3 pt:pt30 ;
+		rdf:_4 pt:pt31
+	] .
+
+polygon:wall_w_2 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt32 ;
+		rdf:_2 pt:pt33 ;
+		rdf:_3 pt:pt8 ;
+		rdf:_4 pt:pt5
+	] .
+
+polygon:wall_w_3 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt6 ;
+		rdf:_2 pt:pt9 ;
+		rdf:_3 pt:pt34 ;
+		rdf:_4 pt:pt35
+	] .
+
+polygon:wall_b_w_1 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt36 ;
+		rdf:_2 pt:pt37 ;
+		rdf:_3 pt:pt38 ;
+		rdf:_4 pt:pt39
+	] .
+
+polygon:wall_b_w_2 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt39 ;
+		rdf:_2 pt:pt38 ;
+		rdf:_3 pt:pt40 ;
+		rdf:_4 pt:pt41
+	] .
+
+# polygon:wall_b_e a class:Polygon ;
+# 	property:vertices [ a class:PtSeq ;
+# 		rdf:_1 pt:pt42 ;
+# 		rdf:_2 pt:pt43 ;
+# 		rdf:_3 pt:pt44 ;
+# 		rdf:_4 pt:pt45
+# 	] .
+
+polygon:wall_b_n a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt46 ;
+		rdf:_2 pt:pt47 ;
+		rdf:_3 pt:pt44 ;
+		rdf:_4 pt:pt41
+	] .
+
+polygon:wall_b_s a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt36 ;
+		rdf:_2 pt:pt43 ;
+		rdf:_3 pt:pt48 ;
+		rdf:_4 pt:pt49
+	] .
+
+polygon:door_1 a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt31 ;
+		rdf:_2 pt:pt30 ;
+		rdf:_3 pt:pt33 ;
+		rdf:_4 pt:pt32
+	] .
+
+polygon:door_b a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt50 ;
+		rdf:_2 pt:pt51 ;
+		rdf:_3 pt:pt38 ;
+		rdf:_4 pt:pt39
+	] .
+# endregion Polygons
+
+# region Space-Time Material Definitions
+material:obstacle a class:Material ; property:name "obstacle" ; property:color "BLACK" .
+material:water a class:Material ; property:name "water" ; property:color "BLUE_LIGHT" .
+material:carpet a class:Material ; property:name "carpet" ; property:color "PURPLE" .
+material:wood a class:Material ; property:name "wood" ; property:color "BROWN" .
+material:tile a class:Material ; property:name "tile" ; property:color "WHITE" .
+material:cement a class:Material ; property:name "cement" ; property:color "GREY_LIGHT" .
+material:asphalt a class:Material ; property:name "asphalt" ; property:color "GREY" .
+material:grass a class:Material ; property:name "grass" ; property:color "GREEN" .
+material:bush a class:Material ; property:name "bush" ; property:color "GREEN_DARK" .
+material:metal a class:Material ; property:name "metal" ; property:color "ORANGE" .
+# endregion Space-Time Material Definitions
+
+# region Target Property Definitions
+transportation:walking a class:Transportation ; property:name "walking" .
+transportation:swimming a class:Transportation ; property:name "swimming" .
+transportation:vehicle a class:Transportation ; property:name "vehicle" .
+transportation:bicycle a class:Transportation ; property:name "bicycle" .
+interval:young a class:Interval ; property:min t:0 ; property:max t:60 ; property:include_min true ; property:include_max false .
+interval:old a class:Interval ; property:min t:60 ; property:include_min true ; property:include_max false .
+age_group:young a class:AgeGroup ; property:name "young" ; property:age_range interval:young .
+age_group:old a class:AgeGroup ; property:name "old" ; property:age_range interval:old .
+# endregion Target Property Definitions
+
+# region Traversability Requirements
+traversability:door a class:TraversabilityReq ;
+	property:transportation_req transportation:walking ;
+	property:max_diameter 0.8 ;
+	property:max_height 2.0 .
+traversability:river a class:TraversabilityReq ;
+	property:transportation_req transportation:swimming .
+traversability:room a class:TraversabilityReq ;
+	property:transportation_req transportation:walking .
+traversability:bridge a class:TraversabilityReq ;
+	property:transportation_req transportation:walking ;
+	property:transportation_req transportation:vehicle ;
+	property:transportation_req transportation:bicycle ;
+	property:max_diameter 3.0 .
+traversability:under_bridge a class:TraversabilityReq ;
+	property:transportation_req transportation:swimming ;
+	property:max_diameter 2.0 ;
+	property:max_height 3.0 .
+traversability:unrestricted a class:TraversabilityReq ;
+	property:transportation_req transportation:walking ;
+	property:transportation_req transportation:swimming ;
+	property:transportation_req transportation:vehicle ;
+	property:transportation_req transportation:bicycle .
+# endregion Traversability Requirements
+
+# region Space-Time Sets
+set:a a class:SpaceTime ;
+	property:name "A" ;
+	property:geometry polygon:a ;
+	property:material material:cement ;
+	property:traversability_for traversability:room .
+
+set:b a class:SpaceTime ;
+	property:name "B" ;
+	property:geometry polygon:b ;
+	property:material material:cement ;
+	property:traversability_for traversability:room .
+
+set:c a class:SpaceTime ;
+	property:name "C" ;
+	property:geometry polygon:c ;
+	property:material material:cement ;
+	property:traversability_for traversability:room .
+
+set:r1 a class:SpaceTime ;
+	property:name "R1" ;
+	property:geometry polygon:river_1 ;
+	property:material material:water ;
+	property:traversability_for traversability:river .
+
+set:r2 a class:SpaceTime ;
+	property:name "R2" ;
+	property:geometry polygon:river_2 ;
+	property:material material:water ;
+	property:traversability_for traversability:river .
+
+set:r3 a class:SpaceTime ;
+	property:name "R3" ;
+	property:geometry polygon:river_3 ;
+	property:material material:water ;
+	property:traversability_for traversability:river .
+
+set:r4 a class:SpaceTime ;
+	property:name "R4" ;
+	property:geometry polygon:river_4 ;
+	property:material material:water ;
+	property:traversability_for traversability:under_bridge .
+
+set:r5 a class:SpaceTime ;
+	property:name "R5" ;
+	property:geometry polygon:river_5 ;
+	property:material material:water ;
+	property:traversability_for traversability:river .
+
+set:ww1 a class:SpaceTime ;
+	property:name "WW1" ;
+	property:geometry polygon:wall_w_1 ;
+	property:material material:obstacle .
+
+set:ww2 a class:SpaceTime ;
+	property:name "WW2" ;
+	property:geometry polygon:wall_w_2 ;
+	property:material material:obstacle .
+
+set:ww3 a class:SpaceTime ;
+	property:name "WW3" ;
+	property:geometry polygon:wall_w_3 ;
+	property:material material:obstacle .
+
+set:wbn a class:SpaceTime ;
+	property:name "WBN" ;
+	property:geometry polygon:wall_b_n ;
+	property:material material:obstacle .
+
+# set:wbe a class:SpaceTime ;
+# 	property:name "WBE" ;
+# 	property:geometry polygon:wall_b_e ;
+# 	property:material material:obstacle .
+
+set:wbs a class:SpaceTime ;
+	property:name "WBS" ;
+	property:geometry polygon:wall_b_s ;
+	property:material material:obstacle .
+
+set:wbw1 a class:SpaceTime ;
+	property:name "WBW1" ;
+	property:geometry polygon:wall_b_w_1 ;
+	property:material material:obstacle .
+
+set:wbw2 a class:SpaceTime ;
+	property:name "WBW2" ;
+	property:geometry polygon:wall_b_w_2 ;
+	property:material material:obstacle .
+
+set:bridge a class:SpaceTime ;
+	property:name "Bridge" ;
+	property:geometry polygon:bridge ;
+	property:material material:wood ;
+	property:traversability_for traversability:bridge .
+
+set:door_1 a class:SpaceTime ;
+	property:name "Door 1" ;
+	property:geometry polygon:door_1 ;
+	property:material material:metal ;
+	property:traversability_for traversability:door .
+
+set:door_b a class:SpaceTime ;
+	property:name "Door B" ;
+	property:geometry polygon:door_b ;
+	property:material material:metal ;
+	property:traversability_for traversability:door .
+
+set:a_1 a class:SpaceTime ;
+	property:name "Asphalt 1" ;
+	property:geometry polygon:asphalt_1 ;
+	property:material material:asphalt ;
+	property:traversability_for traversability:unrestricted .
+
+set:a_2 a class:SpaceTime ;
+	property:name "Asphalt 2" ;
+	property:geometry polygon:asphalt_2 ;
+	property:material material:asphalt ;
+	property:traversability_for traversability:unrestricted .
+
+set:a_3 a class:SpaceTime ;
+	property:name "Asphalt 3" ;
+	property:geometry polygon:asphalt_3 ;
+	property:material material:asphalt ;
+	property:traversability_for traversability:unrestricted .
+
+set:a_4 a class:SpaceTime ;
+	property:name "Asphalt 4" ;
+	property:geometry polygon:asphalt_4 ;
+	property:material material:asphalt ;
+	property:traversability_for traversability:unrestricted .
+
+set:a_5 a class:SpaceTime ;
+	property:name "Asphalt 5" ;
+	property:geometry polygon:asphalt_5 ;
+	property:material material:asphalt ;
+	property:traversability_for traversability:unrestricted .
+
+set:a_6 a class:SpaceTime ;
+	property:name "Asphalt 6" ;
+	property:geometry polygon:asphalt_6 ;
+	property:material material:asphalt ;
+	property:traversability_for traversability:unrestricted .
+
+set:a_7 a class:SpaceTime ;
+	property:name "Asphalt 7" ;
+	property:geometry polygon:asphalt_7 ;
+	property:material material:asphalt ;
+	property:traversability_for traversability:unrestricted .
+# endregion Space-Time Sets
