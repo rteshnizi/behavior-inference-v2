@@ -226,6 +226,77 @@ A temporal stack of Connectivity Graphs connected by temporal edges, enabling re
 
 ## Development
 
+### SPARQL Template System Overview
+
+The system uses a template-based approach for generating SPARQL queries at runtime. Template files (`.rq`) in [src/rt_bi_runtime/sparql/](src/rt_bi_runtime/sparql/) contain placeholder comments that are dynamically replaced with query-specific content.
+
+#### Template Files
+
+| Template | Purpose |
+|----------|---------|
+| `sets.rq` | Discovers all SpaceTime regular sets and classifies them (static, dynamic, affine, temporal) |
+| `geometry.rq` | Fetches polygon vertex coordinates for specific set IDs |
+| `intervals.rq` | Fetches time interval bounds for dynamic/temporal sets |
+| `channel.rq` | Fetches channel information for affine sets |
+| `ids.rq` | Generic ID-based query template |
+
+#### Placeholder Comments
+
+Placeholders are special comment markers in the `.rq` files that get replaced at runtime:
+
+| Placeholder | Config Key | Replaced With |
+|-------------|------------|---------------|
+| `# SELECT ####...` | `placeholder_select` | Additional SELECT variables derived from predicates |
+| `# ID VALUES ####...` | `placeholder_ids` | List of IRI values like `<https://...>` for filtering |
+| `# WHERE ####...` | `placeholder_where` | OPTIONAL clauses to extract predicate-related properties |
+| `# BIND ####...` | `placeholder_bind` | BIND statements converting property values to boolean flags |
+| `# ORDER ####...` | `placeholder_order` | Additional ORDER BY variables |
+| `# FILTER_TRAVERSABILITY ...` | `placeholder_filter_traversability` | Target-specific traversability constraints |
+
+#### Runtime Flow
+
+1. **Predicate Parsing**: Behavior automaton predicates (e.g., `name == "BuildingA"`) are parsed using a Lark grammar (`transition.lark`)
+2. **SPARQL Transformation**: The `PredicateToQueryStr` transformer converts predicates into:
+   - SELECT variables (e.g., `?Name`)
+   - WHERE clauses (e.g., `OPTIONAL { ?regularSetId property:material/property:name ?Name }`)
+   - BIND statements (e.g., `BIND(?Name = "BuildingA" AS ?p_0)`)
+3. **Template Filling**: `RdfStoreNode.__fillTemplate()` replaces all placeholders with the generated SPARQL fragments
+4. **Query Execution**: The filled query is sent to Apache Jena Fuseki via HTTP
+
+#### Example Transformation
+
+Given predicate: `material.name == "cement"`
+
+```
+BA predicate: 'material.name == "cement"'
+                    ↓
+SparqlTransformer.transformPredicate()
+                    ↓
+┌─────────────────────────────────────────────────────────┐
+│ whereClause: "OPTIONAL { ?regularSetId                  │
+│               property:material/property:name           │
+│               ?MaterialName }"                          │
+│                                                         │
+│ varBindings: "BIND (?MaterialName = "cement"            │
+│               AS ?p_0)"                                 │
+│                                                         │
+│ variables:   "?p_0"                                     │
+└─────────────────────────────────────────────────────────┘
+                    ↓
+__fillTemplate() replaces placeholders in sets.rq
+```
+
+The final SPARQL query becomes:
+```sparql
+SELECT ?regularSetId ?static ?dynamic ?affine ?temporal ?p_0
+WHERE {
+    ?regularSetId a/rdfs:subClassOf* class:SpaceTime .
+    OPTIONAL { ?regularSetId property:material/property:name ?MaterialName }
+    BIND (?MaterialName = "cement" AS ?p_0)
+    FILTER (?p_0)
+}
+```
+
 ### Debugging
 
 Enable verbose logging in node constructors:
