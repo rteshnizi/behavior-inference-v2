@@ -101,12 +101,12 @@ src/
 
 ## Prerequisites
 
-- **ROS 2** (tested with Humble/Iron)
+- **ROS 2** (tested on Humble)
 - **Python 3.10+**
 - **colcon** build tool
-- **Apache Jena Fuseki** (for RDF triple store)
-- **RViz2** (for visualization)
-- **rosbridge_server** (for web-based visualization)
+- **Apache Jena Fuseki** (or any RDF store with SPARQL endpoints) for RDF triple store
+- **RViz2** for debugging and visualization
+- **rosbridge_server** for web-based behavior automaton visualization
 
 ### Python Dependencies
 
