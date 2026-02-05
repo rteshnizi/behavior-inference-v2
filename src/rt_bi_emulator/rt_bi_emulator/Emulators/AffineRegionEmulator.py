@@ -36,7 +36,7 @@ class AffineRegionEmulator(Generic[_T_Poly], RtBiNode, ABC):
 		self.__polyClass = PolyCls
 		self.__initTimeNs: int = self.get_clock().now().nanoseconds
 		self.__cutOffTimeSecs: float = inf
-		self.__ctPoly: ContinuousTimePolygon[PolyCls] = ContinuousTimePolygon([])
+		self.__ctPoly: ContinuousTimePolygon[_T_Poly] = ContinuousTimePolygon([])
 		self.__predicates = Predicates([])
 		self.parseParameters()
 

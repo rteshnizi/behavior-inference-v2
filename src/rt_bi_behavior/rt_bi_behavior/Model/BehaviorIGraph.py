@@ -31,7 +31,7 @@ class BehaviorIGraph(NxUtils.Graph):
 		if source not in self.nodes: return {}
 		weightFn = lambda u, v, d: 1000000 if v in visited else 1
 		# The return value is a tuple of two dictionaries keyed by target nodes. The first dictionary stores distance to each target node. The second stores the path to each target node.
-		paths: tuple[dict[NodeId, float], dict[NodeId, list[NodeId]]] = nx.single_source_dijkstra(self, source, cutoff=1000001, weight=weightFn) # pyright: ignore[reportArgumentType]
+		paths: tuple[dict[NodeId, float], dict[NodeId, list[NodeId]]] = nx.single_source_dijkstra(self, source, cutoff=1000001, weight=weightFn) # pyright: ignore[reportAssignmentType, reportArgumentType]
 		destinations = paths[1]
 		# Ros.Log("DIJKSTRA", paths, severity=Ros.LoggingSeverity.ERROR)
 		# Ros.Log("DIJKSTRA", [(d, destinations[d]) for d in destinations], severity=Ros.LoggingSeverity.ERROR)
