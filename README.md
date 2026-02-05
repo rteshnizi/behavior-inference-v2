@@ -17,21 +17,25 @@
 
 ## Introduction
 
-This project implements a **Behavior Inference** system for dynamic surveillance settings, built on top of ROS 2 (Robot Operating System). The system monitors moving targets within dynamic sensor fields of view and reasons about their spatial-temporal behavior using connectivity graphs, behavior automata, and semantic knowledge stored in RDF format.
+This project implements a **Behavior Inference** system for dynamic surveillance settings, built on top of ROS 2 (Robot Operating System).
+The system monitors moving targets within dynamic sensor fields of view and reasons about their spatial-temporal behavior using connectivity graphs, behavior automata, and semantic knowledge stored in RDF format.
 
-The core algorithm constructs **Connectivity Graphs** and **Metric I-Graphs** (Interval Graphs) to track relationships between observed regions, sensors, shadows (unobserved areas), and anti-shadows (observed areas). A **Behavior Automaton** then evaluates these spatial-temporal events against user-defined behavioral predicates.
+The core algorithm constructs **Connectivity Graphs** and **Metric I-Graphs** (Information Graphs) to track relationships between named regions, FOV (field-of-view), and shadows (unobserved areas).
+A **Behavior Automaton** then evaluates these spatiotemporal events against user-defined behavioral predicates.
 
 ### Cold Start Mechanism
 
-Some nodes need a cold start to load initial data. The list of these nodes is specified in the constructor of [ColdStartManager](src/rt_bi_runtime/rt_bi_runtime/ColdStartManager.py) via `__awaitingColdStart` property. It then calls `__triggerNextColdStart` for each of them and awaits a response in `__onColdStartDone` from the respective node.
+Some nodes need a cold start to load initial data.
+The list of these nodes is specified in the constructor of [ColdStartManager](src/rt_bi_runtime/rt_bi_runtime/ColdStartManager.py) via `__awaitingColdStart` property.
+It then calls `__triggerNextColdStart` for each of them and awaits a response in `__onColdStartDone` from the respective node.
 
 ## Project Overview
 
 The system processes:
-- **Map regions** (static, dynamic, or affine polygons)
-- **Sensor fields of view** (sensing polygons that track targets/tracklets)
-- **Targets** (moving entities being observed)
-- **Behavioral specifications** (automata with state transitions based on predicates)
+- **Map regions**: static, dynamic, or affine (moving) polygons.
+- **FOV**: sensing polygons that track targets/tracklets.
+- **Targets**: moving entities whose behavior we are estimating.
+- **Behavioral specifications**: automata with state transitions based on predicates.
 
 Using **Apache Jena Fuseki** as the RDF triple store, the system queries semantic knowledge about spatial regions using SPARQL, enabling rich predicate-based reasoning.
 
