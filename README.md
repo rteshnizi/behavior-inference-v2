@@ -193,7 +193,7 @@ This starts:
 
 The project includes VS Code tasks for development:
 - `rbc: build` - Build with colcon
-- `rbc: source` - Source the workspace
+- `rbc: source` - Source the workspace adn create Colcon environment variables file
 - `rbc: launch` - Launch the system
 
 ### Web Visualization
