@@ -73,7 +73,10 @@ class FusekiInterface:
 
 	@property
 	def __SPARQL_URL(self) -> str:
-		"""http://192.168.50.164:8090/rt-bi/"""
+		"""
+		Creates URL from ROS parameters `fuseki_server` and `rdf_store`.
+		Example: `http://192.168.50.164:8090/rt-bi/`
+		"""
 		return f"{self.__fusekiServerAdr}/{self.__rdfStoreName}/"
 
 	def __parseIntervals(self, helper: SparqlResultHelper, i: int, regularSetId: str) -> tuple[list[Msgs.RtBi.TimeInterval], int]:
