@@ -413,11 +413,11 @@ set:r3 a class:SpaceTime ;
 	property:material material:water ;
 	property:traversability_for traversability:river .
 
-set:r4 a class:SpaceTime ;
-	property:name "R4" ;
-	property:geometry polygon:river_4 ;
-	property:material material:water ;
-	property:traversability_for traversability:under_bridge .
+# set:r4 a class:SpaceTime ;
+# 	property:name "R4" ;
+# 	property:geometry polygon:bridge ;
+# 	property:material material:water ;
+# 	property:traversability_for traversability:under_bridge .
 
 set:r5 a class:SpaceTime ;
 	property:name "R5" ;
@@ -525,3 +525,7 @@ set:a_7 a class:SpaceTime ;
 	property:material material:asphalt ;
 	property:traversability_for traversability:unrestricted .
 # endregion Space-Time Sets
+
+# region Targets
+target:target_1 a class:Target .
+# endregion Targets

@@ -18,7 +18,13 @@ SELECT ?regularSetId ?static ?dynamic ?affine ?temporal
 	# SELECT ####################################
 WHERE {
 	?regularSetId a/rdfs:subClassOf* class:SpaceTime .
+	# Traversability filter (excludes obstacles with no traversability_for)
+	?regularSetId property:traversability_for ?traversability .
+	OPTIONAL { ?traversability property:transportation_req ?allowedTransport . }
+	OPTIONAL { ?traversability property:max_diameter ?maxDiameter . }
+	OPTIONAL { ?traversability property:max_height ?maxHeight . }
 	# WHERE #####################################
+	# FILTER_TRAVERSABILITY ##################### (new placeholder for target constraints)
 	BIND (EXISTS { ?regularSetId property:channel ?o } AS ?affine)
 	BIND (EXISTS { ?regularSetId property:geometry ?o } AS ?hasGeom)
 	BIND (EXISTS { ?regularSetId property:interval ?o } AS ?hasInterval)

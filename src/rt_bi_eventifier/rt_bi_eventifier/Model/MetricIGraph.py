@@ -240,15 +240,15 @@ class MetricIGraph(NxUtils.Graph[GraphPolygon]):
 							pastEdge.coords[0], pastEdge.coords[1],
 							nowEdge.coords[1], nowEdge.coords[0],
 						])
-						obj = Shapely.make_valid(obj)
-						obj = Shapely.set_precision(obj, GeometryLib.EPSILON)
+						obj = Shapely.make_valid(obj) # pyright: ignore[reportAttributeAccessIssue]
+						obj = Shapely.set_precision(obj, GeometryLib.EPSILON) # pyright: ignore[reportAttributeAccessIssue]
 						subParts = GeometryLib.toGeometryList(obj)
 						for p in subParts: objs.append(p)
 				else:
 					objs.append(nowSensor.interior)
 			objs = objs if len(objs) > 0 else [Shapely.Polygon()]
 			sweptBySensors = Shapely.GeometryCollection(geoms=objs)
-			remainingShadows = GeometryLib.difference(intersectionOfShadows, sweptBySensors)
+			remainingShadows = GeometryLib.difference(intersectionOfShadows, sweptBySensors) # pyright: ignore[reportArgumentType]
 			if len(remainingShadows) > 0: return True
 		except Exception as e:
 			from traceback import format_exc

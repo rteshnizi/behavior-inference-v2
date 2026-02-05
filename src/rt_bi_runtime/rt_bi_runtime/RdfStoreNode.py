@@ -55,7 +55,7 @@ class RdfStoreNode(DataDictionaryNode[_Parameters]):
 			"transition_grammar_dir": StrParser[_Parameters](self, "transition_grammar_dir"),
 			"transition_grammar_file": StrParser[_Parameters](self, "transition_grammar_file"),
 		}
-		newKw = { "node_name": "dd_rdf", "loggingSeverity": Ros.LoggingSeverity.WARN, **kwArgs}
+		newKw = { "node_name": "dd_rdf", "loggingSeverity": Ros.LoggingSeverity.INFO, **kwArgs}
 		super().__init__(parsers, **newKw)
 		self.__baseDir = get_package_share_directory(package_name)
 		self.__httpInterface = FusekiInterface(self, self["fuseki_server"][0], self["rdf_store"][0])
@@ -84,6 +84,14 @@ class RdfStoreNode(DataDictionaryNode[_Parameters]):
 		raise RuntimeError(f"Unexpected template file parameter name: {param}")
 
 	def __fillTemplate(self, templateParam: QueryTemplates, ids: list[str], whereClauses: list[str], variables: list[str], binds: list[str], orders: list[str]) -> str:
+		Ros.Log(f"Filling template for {templateParam}",
+		[
+			["ids:", ids],
+			["where:", whereClauses],
+			["variables:", variables],
+			["binds:", binds],
+			["orders:", orders],
+		])
 		fileName = self.__templateParamToFileParam(templateParam)
 		sparql = Path(self.__baseDir, self["sparql_dir"][0], fileName).read_text()
 		sparql = sparql.replace(self["placeholder_select"][0], self.__joinList(variables, " "))
@@ -116,7 +124,7 @@ class RdfStoreNode(DataDictionaryNode[_Parameters]):
 			variables.append(extractedVars)
 			whereClauses.append(extractedSelector)
 			binds.append(extractedBindings)
-		binds.append(self.__createFilterStatement(variables))
+		# binds.append(self.__createFilterStatement(variables))
 		sparql = self.__fillTemplate("sparql_sets", ids, whereClauses, variables, binds, orders)
 		res.json_predicate_symbols = dumps(predicateMapping)
 		msgsByTypeById = self.__httpInterface.fetchSets(sparql)

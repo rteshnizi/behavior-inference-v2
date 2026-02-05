@@ -14,5 +14,6 @@ rt_bi_runtime:
       placeholder_order: "# ORDER #####################################"
       placeholder_select: "# SELECT ####################################"
       placeholder_where: "# WHERE #####################################"
+      placeholder_filter_traversability: "# FILTER_TRAVERSABILITY #####################"
       transition_grammar_dir: "rdf" # Don't forget to add the resource directories to setup.py
       transition_grammar_file: "transition.lark"
