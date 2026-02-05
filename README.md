@@ -123,18 +123,12 @@ src/
 
 ## Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url> behavior-inference-v2
-   cd behavior-inference-v2
-   ```
-
-2. **Build with colcon:**
+1. **Build with colcon:**
    ```bash
    colcon build
    ```
 
-3. **Source the workspace:**
+2. **Source the workspace:**
    ```bash
    source install/local_setup.bash
    ```
@@ -193,6 +187,7 @@ This starts:
 - **rt_bi_runtime** (`all.launch.py`) - Cold Start Manager and RDF Data Dictionary
 - **rt_bi_behavior** (`ba.launch.py`) - Behavior Automaton with web visualization
 - **rt_bi_emulator** (`map.launch.py`) - Map and sensor emulation
+- **rt_bi_eventifier** (`ev.launch.py`) - Eventifier
 
 ### VS Code Tasks
 
@@ -224,7 +219,7 @@ Represents spatial adjacency at a single time instant:
 - **Anti-Shadows** - Observed regions (intersection of map and sensor)
 - **Edges** - Connectivity between adjacent regions
 
-### Metric I-Graph (Interval Graph)
+### Metric I-Graph (Information Graph)
 
 A temporal stack of Connectivity Graphs connected by temporal edges, enabling reasoning about target movement possibilities across time.
 
@@ -327,7 +322,7 @@ Configure rendering modules in `src/rt_bi_eventifier/config/ev.yaml`:
 renderModules:
   - c_graph    # Connectivity Graph
   - ctcd       # Continuous-Time Collision Detection
-  - i_graph    # Interval Graph
+  - i_graph    # Information Graph
 ```
 
 ## License
