@@ -14,7 +14,7 @@
 		"${workspaceFolder}/src/rt_bi_emulator",
 		"${workspaceFolder}/src/rt_bi_eventifier",
 		"${workspaceFolder}/src/rt_bi_runtime",
-		"${workspaceFolder}/install/rt_bi_interfaces/lib/python3.10/site-packages",
+		"${workspaceFolder}/install/rt_bi_interfaces/local/lib/python3.10/dist-packages",
 	],
 	"python.analysis.extraPaths": [
 		"${workspaceFolder}/src/rt_bi_behavior",
@@ -23,7 +23,7 @@
 		"${workspaceFolder}/src/rt_bi_emulator",
 		"${workspaceFolder}/src/rt_bi_eventifier",
 		"${workspaceFolder}/src/rt_bi_runtime",
-		"${workspaceFolder}/install/rt_bi_interfaces/lib/python3.10/site-packages",
+		"${workspaceFolder}/install/rt_bi_interfaces/local/lib/python3.10/dist-packages",
 	],
 	"cSpell.words": [
 		"agraph",
@@ -172,4 +172,5 @@
 	"python.analysis.autoFormatStrings": true,
 	"python.testing.autoTestDiscoverOnSaveEnabled": false,
 	"ROS2.distro": "humble",
+	"github.copilot.chat.codeGeneration.useInstructionFiles": true,
 }
