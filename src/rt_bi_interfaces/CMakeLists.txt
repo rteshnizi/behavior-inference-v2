@@ -24,6 +24,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RegularSet.msg"
   "msg/RegularSetArray.msg"
   "msg/TimeInterval.msg"
+  "msg/Token.msg"
   "msg/Tracklet.msg"
   # Services
   "srv/DataReference.srv"

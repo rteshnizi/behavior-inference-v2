@@ -27,6 +27,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			baseDir: str,
 			transitionGrammarDir: str,
 			grammarFileName: str,
+			tokenPublisher: Ros.Publisher
 		):
 		super().__init__()
 		self.__dotPublisher: Ros.Publisher | None = None
@@ -40,6 +41,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		self.__transitionGrammarDir: str = transitionGrammarDir
 		self.__grammarFileName: str = grammarFileName
 		self.__initializedTokens = False
+		self.__tokenPublisher = tokenPublisher
 		self.__buildGraph(states, transitions)
 		return
 
@@ -119,6 +121,9 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 
 	def __createToken(self, path: list[NodeId]) -> Token:
 		token = Token(id=f"{self.__tokenCounter}", path=path)
+		Ros.Log(f"Created token {token['id']} with path ending in", [token["path"][-1]])
+		tokenMsg = Msgs.RtBi.Token(id=token["id"])
+		self.__tokenPublisher.publish(tokenMsg)
 		self.__tokenCounter += 1
 		return token
 
@@ -169,6 +174,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		i = 0
 		while i < (len(tokens)):
 			if tokens[i]["path"][-1] not in iGraph.nodes: # Token has expired as the node is not in history anymore
+				Ros.Log("TODO: REMOVE TOKEN FROM RDF STORE")
 				tokens.pop(i)
 				i -= 1
 			i += 1
@@ -224,6 +230,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		self.__removeAllTokens()
 		self.__tokenCounter = 0
 		for nodeId in iGraph.nodes:
+			# Initial tokens are only created in shadow nodes
 			if cast(NodeId, nodeId).regionId.startswith("https://rezateshnizi.com/ex2-map/defintion/av"): continue
 			token = self.__createToken([nodeId])
 			self.states[self.__start]["tokens"].append(token)

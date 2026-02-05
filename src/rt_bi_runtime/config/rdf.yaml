@@ -7,10 +7,12 @@ rt_bi_runtime:
       sparql_dir: "sparql" # Don't forget to add the resource directories to setup.py
       sparql_channel: "channel.rq"
       sparql_geometry: "geometry.rq"
+      sparql_insert: "insert.rq"
       sparql_intervals: "intervals.rq"
       sparql_sets: "sets.rq"
       placeholder_bind: "# BIND ######################################"
       placeholder_ids: "# ID VALUES #############################"
+      placeholder_insert: "# INSERT VALUES #############################"
       placeholder_order: "# ORDER #####################################"
       placeholder_select: "# SELECT ####################################"
       placeholder_where: "# WHERE #####################################"

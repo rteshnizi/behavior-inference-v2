@@ -35,6 +35,7 @@ class BaNode(ColdStartable):
 		self.__start: str = ""
 		self.__accepting: list[str] = []
 		self.parseParameters()
+		self.__tokenPublisher = RtBiInterfaces.createTokenPublisher(self)
 		self.__ba = PropositionalBA(
 			self.__name,
 			self.__states,
@@ -43,7 +44,8 @@ class BaNode(ColdStartable):
 			self.__accepting,
 			self.__baseDir,
 			self.__grammarDir,
-			self.__grammarFile
+			self.__grammarFile,
+			self.__tokenPublisher,
 		)
 		self.waitForColdStartPermission()
 		RtBiInterfaces.subscribeToIGraph(self, self.__onEvent)

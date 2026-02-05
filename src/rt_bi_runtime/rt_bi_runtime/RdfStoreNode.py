@@ -21,6 +21,7 @@ QueryTemplates = Literal[
 	"sparql_geometry",
 	"sparql_intervals",
 	"sparql_sets",
+	"sparql_insert",
 ]
 _Parameters = Literal[
 	"fuseki_server",
@@ -46,6 +47,7 @@ class RdfStoreNode(DataDictionaryNode[_Parameters]):
 			"sparql_channel": StrParser[_Parameters](self, "sparql_channel"),
 			"sparql_geometry": StrParser[_Parameters](self, "sparql_geometry"),
 			"sparql_intervals": StrParser[_Parameters](self, "sparql_intervals"),
+			"sparql_insert": StrParser[_Parameters](self, "sparql_insert"),
 			"sparql_sets": StrParser[_Parameters](self, "sparql_sets"),
 			"placeholder_bind": StrParser[_Parameters](self, "placeholder_bind"),
 			"placeholder_ids": StrParser[_Parameters](self, "placeholder_ids"),
@@ -55,12 +57,13 @@ class RdfStoreNode(DataDictionaryNode[_Parameters]):
 			"transition_grammar_dir": StrParser[_Parameters](self, "transition_grammar_dir"),
 			"transition_grammar_file": StrParser[_Parameters](self, "transition_grammar_file"),
 		}
-		newKw = { "node_name": "dd_rdf", "loggingSeverity": Ros.LoggingSeverity.INFO, **kwArgs}
+		newKw = { "node_name": "dd_rdf", "loggingSeverity": Ros.LoggingSeverity.WARN, **kwArgs}
 		super().__init__(parsers, **newKw)
 		self.__baseDir = get_package_share_directory(package_name)
 		self.__httpInterface = FusekiInterface(self, self["fuseki_server"][0], self["rdf_store"][0])
 		self.__predicateToIndex: dict[str, int] = {}
 		RtBiInterfaces.createSpaceTimeService(self, self.__onSpaceTimeRequest)
+		RtBiInterfaces.subscribeToToken(self, self.__onToken)
 
 	def __joinList(self, l: list[str], separator: str) -> str:
 		if len(l) == 0: return ""
@@ -156,6 +159,9 @@ class RdfStoreNode(DataDictionaryNode[_Parameters]):
 		if templateParam == "sparql_geometry": return self.__httpInterface.fetchGeometryById(sparql, msgsById)
 		if templateParam == "sparql_intervals": return self.__httpInterface.fetchIntervalsById(sparql, msgsById)
 		raise RuntimeError(f"Unexpected template query param: {templateParam}")
+
+	def __onToken(self, msg: Msgs.RtBi.Token) -> None:
+		Ros.Log("TODO: Insert token", [msg])
 
 	def render(self) -> None:
 		return super().render()

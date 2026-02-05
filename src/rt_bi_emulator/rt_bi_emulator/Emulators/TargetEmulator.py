@@ -7,7 +7,7 @@ from rt_bi_emulator.Emulators.AffineRegionEmulator import AffineRegionEmulator
 
 class TargetEmulator(AffineRegionEmulator):
 	def __init__(self):
-		newKw = { "node_name": "emulator_target", "loggingSeverity": Ros.LoggingSeverity.WARN }
+		newKw = { "node_name": "emulator_target", "loggingSeverity": Ros.LoggingSeverity.INFO }
 		super().__init__(TargetPolygon, **newKw)
 		(self.__publisher, _) = RtBiInterfaces.createTargetPublisher(self, self.publishUpdate, self.updateInterval)
 

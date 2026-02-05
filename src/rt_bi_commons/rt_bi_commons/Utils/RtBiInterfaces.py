@@ -40,6 +40,7 @@ class RtBiInterfaces:
 		RT_BI_EVENTIFIER_ISOMORPHISM = "/__rt_bi_eventifier/isomorphism"
 		RT_BI_RUNTIME_COLD_START = "/__rt_bi_runtime/cold_start"
 		RT_BI_RUNTIME_PREDICATES = "/__rt_bi_runtime/predicates"
+		RT_BI_BA_TOKEN = "/__rt_bi_ba/token"
 
 	class ServiceNames(Enum):
 		RT_BI_EVENTIFIER_EVALUATE = "/__rt_bi_eventifier/eval"
@@ -151,4 +152,14 @@ class RtBiInterfaces:
 	@staticmethod
 	def subscribeToIsomorphism(node: RtBiNode, callbackFunc: Callable[[Msgs.RtBi.Isomorphism], None]) -> None:
 		Ros.CreateSubscriber(node, Msgs.RtBi.Isomorphism, RtBiInterfaces.TopicNames.RT_BI_EVENTIFIER_ISOMORPHISM.value, callbackFunc)
+		return
+
+	@staticmethod
+	def createTokenPublisher(node: RtBiNode) -> Publisher:
+		(publisher, _) = Ros.CreatePublisher(node, Msgs.RtBi.Token, RtBiInterfaces.TopicNames.RT_BI_BA_TOKEN.value)
+		return publisher
+
+	@staticmethod
+	def subscribeToToken(node: RtBiNode, callbackFunc: Callable[[Msgs.RtBi.Token], None]) -> None:
+		Ros.CreateSubscriber(node, Msgs.RtBi.Token, RtBiInterfaces.TopicNames.RT_BI_BA_TOKEN.value, callbackFunc)
 		return

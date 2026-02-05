@@ -32,7 +32,7 @@ class MetricIGraph(NxUtils.Graph[GraphPolygon]):
 	SUBMODULE = Literal["c_graph", "ctcd", "i_graph"]
 	"""The name of a ShadowTree sub-module publisher."""
 	__RENDER_RADIUS = 10
-	__MAX_HISTORY = 15
+	__MAX_HISTORY = 5
 	__ISOMORPHIC_DISTANCE_LIMIT = 50
 
 	@dataclass(frozen=True, order=True)

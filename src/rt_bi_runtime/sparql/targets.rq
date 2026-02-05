@@ -10,27 +10,15 @@ PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX set:      <https://rezateshnizi.com/ex2-map/sets#>
 PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
 PREFIX t:        <https://rezateshnizi.com/ex2-map/ts#>
+PREFIX target:   <https://rezateshnizi.com/ex2-map/targets#>
 PREFIX x:        <https://rezateshnizi.com/ex2-map/xs#>
 PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
 PREFIX y:        <https://rezateshnizi.com/ex2-map/ys#>
 
-SELECT ?regularSetId ?static ?dynamic ?affine ?temporal ?traversability
+SELECT ?targetId
 	# SELECT ####################################
 WHERE {
-	?regularSetId a/rdfs:subClassOf* class:SpaceTime .
-	# Exclude obstacles with no traversability_for
-	?regularSetId property:traversability_for ?traversability .
-	OPTIONAL { ?traversability property:transportation_req ?allowedTransport . }
-	OPTIONAL { ?traversability property:max_diameter ?maxDiameter . }
-	OPTIONAL { ?traversability property:max_height ?maxHeight . }
-	# WHERE #####################################
-	# FILTER_TRAVERSABILITY ##################### (new placeholder for target constraints)
-	BIND (EXISTS { ?regularSetId property:channel ?o } AS ?affine)
-	BIND (EXISTS { ?regularSetId property:geometry ?o } AS ?hasGeom)
-	BIND (EXISTS { ?regularSetId property:interval ?o } AS ?hasInterval)
-	BIND (?hasGeom && ?hasInterval AS ?dynamic)
-	BIND (?hasGeom && !?hasInterval AS ?static)
-	BIND (!?hasGeom && ?hasInterval AS ?temporal)
+	?regularSetId a/rdfs:subClassOf* class:Target .
 	# BIND ######################################
 }
 ORDER BY ?regularSetId
