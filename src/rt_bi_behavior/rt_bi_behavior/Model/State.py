@@ -1,11 +1,13 @@
 from typing import TypedDict
 
 from rt_bi_commons.Shared.NodeId import NodeId
+from rt_bi_commons.Shared.Traversability import TargetAttributes
 
 
 class Token(TypedDict):
 	id: str
 	path: list[NodeId]
+	attributes: TargetAttributes
 
 class TokenWithoutHistory(TypedDict):
 	id: str

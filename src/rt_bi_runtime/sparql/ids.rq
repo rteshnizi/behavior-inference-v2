@@ -1,18 +1,18 @@
 PREFIX class:    <https://rezateshnizi.com/rt-bi-v2/class#>
 PREFIX dc:       <http://purl.org/dc/elements/1.1/>
-PREFIX interval: <https://rezateshnizi.com/ex2-map/intervals#>
-PREFIX material: <https://rezateshnizi.com/ex2-map/materials#>
+PREFIX interval: <https://rezateshnizi.com/env/intervals#>
+PREFIX material: <https://rezateshnizi.com/env/materials#>
 PREFIX owl:      <http://www.w3.org/2002/07/owl#>
-PREFIX polygon:  <https://rezateshnizi.com/ex2-map/polys#>
-PREFIX pt:       <https://rezateshnizi.com/ex2-map/pts#>
+PREFIX polygon:  <https://rezateshnizi.com/env/polys#>
+PREFIX pt:       <https://rezateshnizi.com/env/pts#>
 PREFIX rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX set:      <https://rezateshnizi.com/ex2-map/sets#>
+PREFIX set:      <https://rezateshnizi.com/env/sets#>
 PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
-PREFIX t:        <https://rezateshnizi.com/ex2-map/ts#>
-PREFIX x:        <https://rezateshnizi.com/ex2-map/xs#>
+PREFIX t:        <https://rezateshnizi.com/env/ts#>
+PREFIX x:        <https://rezateshnizi.com/env/xs#>
 PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
-PREFIX y:        <https://rezateshnizi.com/ex2-map/ys#>
+PREFIX y:        <https://rezateshnizi.com/env/ys#>
 
 SELECT ?regularSetId
 	# SELECT ####################################

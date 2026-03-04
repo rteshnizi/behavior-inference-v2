@@ -6,6 +6,7 @@ import networkx as nx
 from rt_bi_behavior.Model.Transition import TransitionStatement
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Shared.Predicates import Predicates
+from rt_bi_commons.Shared.Traversability import TargetAttributes, TraversabilityRequirements, inferAttributes, isCompatible
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.NetworkX import NxUtils
@@ -25,6 +26,16 @@ class BehaviorIGraph(NxUtils.Graph):
 	def satisfies(self, node: NodeId, criterion: TransitionStatement) -> bool:
 		predicates = self.getContent(node, "predicates")
 		return criterion.evaluate(predicates)
+
+	def isTraversableBy(self, node: NodeId, attrs: TargetAttributes) -> bool:
+		"""Return True if attrs are compatible with the traversability requirements of node."""
+		reqs = TraversabilityRequirements.fromDict(self.nodes[node].get("traversability_reqs"))
+		return isCompatible(reqs, attrs)
+
+	def updateAttributes(self, node: NodeId, attrs: TargetAttributes) -> TargetAttributes:
+		"""Return attrs narrowed/enriched by the traversability requirements of node."""
+		reqs = TraversabilityRequirements.fromDict(self.nodes[node].get("traversability_reqs"))
+		return inferAttributes(reqs, attrs)
 
 	def propagate(self, source: NodeId, visited: set[NodeId]) -> dict[NodeId, list[NodeId]]:
 		"""Returns a dictionary from target Id to path"""
@@ -51,10 +62,10 @@ class BehaviorIGraph(NxUtils.Graph):
 		for node in d["nodes"]:
 			node["id"] = NodeId.fromDict(node["id"])
 			node["predicates"] = Predicates(node["predicates"])
+			# traversability_reqs is already a plain dict (or None) — keep as-is for
+			# lazy deserialization in isTraversableBy / updateAttributes
 		for adj in d["adjacency"]:
 			for edge in adj:
 				edge["id"] = NodeId.fromDict(edge["id"])
-		# Ros.Log("Graph Nodes", d["nodes"], severity=Ros.LoggingSeverity.ERROR)
-		# Ros.Log("Graph Adjacency", d["adjacency"], severity=Ros.LoggingSeverity.ERROR)
 		g = nx.adjacency_graph(d)
 		return BehaviorIGraph(g)

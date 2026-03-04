@@ -19,6 +19,13 @@ rt_bi_interfaces/Polygon[] polygons
 # The temporal ranges associated with this update
 rt_bi_interfaces/TimeInterval[] intervals
 
+######################### Traversability #########################
+# Traversability constraints on this region (from RDF store).
+# Empty / NaN means unconstrained.
+string[] traversability_transport_req
+float64 traversability_max_diameter    # NaN = unconstrained
+float64 traversability_min_clearance   # NaN = unconstrained
+
 ######################### Properties #########################
 # The fully qualified name of the associated ROS node.
 string channel

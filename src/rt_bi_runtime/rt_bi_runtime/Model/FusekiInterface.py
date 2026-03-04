@@ -175,21 +175,38 @@ class FusekiInterface:
 		return msgsToUpdate
 
 	def fetchSets(self, query: str) -> dict["FusekiInterface.SetTypes", dict[str, Msgs.RtBi.RegularSet]]:
+		from math import nan
 		resultHelper = self.__sendQuery(query)
 		stamp = Ros.Now(self.__node).to_msg()
-		i = 0
 		setsByType: dict[FusekiInterface.SetTypes, dict[str, Msgs.RtBi.RegularSet]] = {
 			"static": {},
 			"dynamic": {},
 			"affine": {},
 			"temporal": {},
 		}
-		for i in range(len(resultHelper)):
+		# Group rows by regularSetId to handle multi-valued allowedTransport
+		i = 0
+		while i < len(resultHelper):
+			regularSetId = resultHelper.strVarValue(i, "regularSetId")
 			msg = Msgs.RtBi.RegularSet()
-			msg.id = resultHelper.strVarValue(i, "regularSetId")
+			msg.id = regularSetId
 			msg.stamp = stamp
 			(setType, msg) = self.__inferSetType(resultHelper, i, msg)
 			msg.predicates = self.__parsePredicates(resultHelper, i)
+			# Collect traversability — transportation_req may span multiple rows
+			transportModes: list[str] = []
+			msg.traversability_max_diameter = nan
+			msg.traversability_min_clearance = nan
+			while i < len(resultHelper) and resultHelper.strVarValue(i, "regularSetId") == regularSetId:
+				transport = resultHelper.strVarValue(i, "allowedTransport")
+				if transport:
+					transportModes.append(transport.split("#")[-1])  # strip IRI prefix
+				if resultHelper.contains(i, "maxDiameter"):
+					msg.traversability_max_diameter = resultHelper.floatVarValue(i, "maxDiameter")
+				if resultHelper.contains(i, "maxHeight"):
+					msg.traversability_min_clearance = resultHelper.floatVarValue(i, "maxHeight")
+				i += 1
+			Ros.ConcatMessageArray(msg.traversability_transport_req, transportModes)
 			if setType == "static" or setType == "dynamic":
 				# Static Map is always reachable
 				msg.predicates.append(Msgs.RtBi.Predicate(name="accessible", value=Msgs.RtBi.Predicate.TRUE))

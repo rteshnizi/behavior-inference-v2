@@ -11,6 +11,7 @@ from rt_bi_behavior.Model.State import State, Token
 from rt_bi_behavior.Model.Transition import Transition, TransitionStatement
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Shared.Predicates import Predicates
+from rt_bi_commons.Shared.Traversability import TargetAttributes
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 
@@ -119,10 +120,19 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 				self.__addTransition(src, statementSyntax, dst)
 		return
 
-	def __createToken(self, path: list[NodeId]) -> Token:
-		token = Token(id=f"{self.__tokenCounter}", path=path)
+	def __createToken(self, path: list[NodeId], attributes: TargetAttributes | None = None) -> Token:
+		token = Token(id=f"{self.__tokenCounter}", path=path, attributes=attributes or TargetAttributes())
 		Ros.Log(f"Created token {token['id']} with path ending in", [token["path"][-1]])
 		tokenMsg = Msgs.RtBi.Token(id=token["id"])
+		if token["attributes"]:
+			for key, val in token["attributes"].items():
+				if key == "transportation_mode":
+					for mode in val:
+						pred = Msgs.RtBi.Predicate(name="transportation_mode", value=mode)
+						Ros.AppendMessage(tokenMsg.attributes, pred)
+				elif isinstance(val, float):
+					pred = Msgs.RtBi.Predicate(name=key, value=str(val))
+					Ros.AppendMessage(tokenMsg.attributes, pred)
 		self.__tokenPublisher.publish(tokenMsg)
 		self.__tokenCounter += 1
 		return token
@@ -155,9 +165,13 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			if len(extensions) == 0: self.__addToken(fromState, token)
 			for destination in extensions:
 				if destination in visited: continue
+				# Req #2/#3: skip hop if token attributes conflict with region requirements
+				if not iGraph.isTraversableBy(destination, token["attributes"]): continue
 				visited.add(destination)
+				# Req #4: enrich/narrow token attributes based on region requirements
+				newAttributes = iGraph.updateAttributes(destination, token["attributes"])
 				path = self.__extendPath(token["path"], extensions[destination])
-				newToken = self.__createToken(path)
+				newToken = self.__createToken(path, attributes=newAttributes)
 				ps = iGraph.getContent(destination, "predicates")
 				# Ros.Log(f"Destination {destination}", [(p, ps[p]) for p in ps])
 				if iGraph.satisfies(destination, statement):
@@ -231,8 +245,8 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		self.__tokenCounter = 0
 		for nodeId in iGraph.nodes:
 			# Initial tokens are only created in shadow nodes
-			if cast(NodeId, nodeId).regionId.startswith("https://rezateshnizi.com/ex2-map/defintion/av"): continue
-			token = self.__createToken([nodeId])
+			if cast(NodeId, nodeId).regionId.startswith("https://rezateshnizi.com/env/defintion/av"): continue
+			token = self.__createToken([nodeId], attributes=TargetAttributes())
 			self.states[self.__start]["tokens"].append(token)
 		self.__updateStateLabel(self.__start)
 		self.__initializedTokens = True

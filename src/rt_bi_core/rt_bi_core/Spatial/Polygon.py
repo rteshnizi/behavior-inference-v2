@@ -5,6 +5,7 @@ from typing import Literal
 from rt_bi_commons.Shared.Color import RGBA, ColorNames, ColorUtils
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Shared.Predicates import Predicates
+from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Geometry import AffineTransform, GeometryLib, Shapely
 from rt_bi_commons.Utils.Msgs import Msgs
@@ -24,6 +25,7 @@ PolygonFactoryKeys = Literal[
 	"subPartId",
 	"timeNanoSecs",
 	"tracklets",
+	"traversability_reqs",
 ]
 
 class Polygon(ABC):
@@ -66,6 +68,7 @@ class Polygon(ABC):
 			interiorColor: RGBA = ColorNames.GREY_DARK,
 			interior: Shapely.Polygon | None = None,
 			renderLineWidth = 2.5,
+			traversability_reqs: TraversabilityRequirements | None = None,
 			**kwArgs
 		) -> None:
 		"""
@@ -96,6 +99,7 @@ class Polygon(ABC):
 		self.__INTERIOR_COLOR = interiorColor
 		self.__TEXT_COLOR = ColorNames.BLACK if ColorUtils.isLightColor(interiorColor) else ColorNames.WHITE
 		self.__predicates = predicates
+		self.__traversability_reqs = traversability_reqs
 		if len(kwArgs) > 0 : Ros.Log(f"Unassigned keyword args ignored: {repr(kwArgs)}")
 		self.__edges: list[Shapely.LineString] = []
 		self.__buildEdges()
@@ -134,6 +138,10 @@ class Polygon(ABC):
 				hIndex=self.id.hIndex,
 			)
 		return
+
+	@property
+	def traversability_reqs(self) -> TraversabilityRequirements | None:
+		return self.__traversability_reqs
 
 	@property
 	def predicates(self) -> Predicates:

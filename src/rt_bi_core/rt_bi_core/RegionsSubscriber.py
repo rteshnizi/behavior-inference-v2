@@ -4,6 +4,7 @@ from typing import Any, TypeAlias, cast, final
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Shared.MinQueue import MinQueue
 from rt_bi_commons.Shared.Predicates import Predicates
+from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.RViz import RViz
@@ -109,11 +110,25 @@ class RegionsSubscriber(RtBiNode, ABC):
 				"predicates": predicates,
 				"hIndex": -1,
 				"centerOfRotation": poly.centerOfRotation,
+				"traversability_reqs": self.__parseTraversability(regularSet),
 			}
 			if poly.type == SensingPolygon.type: kwArgs["tracklets"] = poly.tracklets
 			poly = PolygonFactory(type(poly), kwArgs)
 			self.__storeGeometry(poly.id.regionId, poly)
 		return
+
+	def __parseTraversability(self, regularSet: Msgs.RtBi.RegularSet) -> TraversabilityRequirements | None:
+		from math import isnan
+		transport_req = list(regularSet.traversability_transport_req)
+		max_diameter = None if isnan(regularSet.traversability_max_diameter) else regularSet.traversability_max_diameter
+		min_clearance = None if isnan(regularSet.traversability_min_clearance) else regularSet.traversability_min_clearance
+		if not transport_req and max_diameter is None and min_clearance is None:
+			return None
+		return TraversabilityRequirements(
+			transportation_req=transport_req,
+			max_diameter=max_diameter,
+			min_clearance=min_clearance,
+		)
 
 	def __createTracklets(self, regularSet: Msgs.RtBi.RegularSet) -> dict[str, Tracklet]:
 		tracklets = {}
@@ -143,6 +158,7 @@ class RegionsSubscriber(RtBiNode, ABC):
 			"predicates": predicates,
 			"hIndex": -1,
 			"centerOfRotation": Msgs.toCoords(polyMsg.center_of_rotation),
+			"traversability_reqs": self.__parseTraversability(regularSet),
 		}
 		match regularSet.set_type:
 			case Msgs.RtBi.RegularSet.STATIC:

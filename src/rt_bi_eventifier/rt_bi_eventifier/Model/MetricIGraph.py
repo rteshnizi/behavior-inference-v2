@@ -123,7 +123,9 @@ class MetricIGraph(NxUtils.Graph[GraphPolygon]):
 		jsonDict = adjacency_data(g)
 		for node in jsonDict["nodes"]:
 			node = cast(dict[str, Any], node)
-			node["predicates"] = cast(GraphPolygon, node["polygon"]).predicates
+			poly = cast(GraphPolygon, node["polygon"])
+			node["predicates"] = poly.predicates
+			node["traversability_reqs"] = poly.traversability_reqs.asDict() if poly.traversability_reqs else None
 			node.pop("polygon")
 			node.pop("subset")
 		return dumps(jsonDict, default=vars)

@@ -108,7 +108,7 @@ property:geometry a rdf:Property ;
 	rdfs:domain class:SpaceTime ;
 	rdfs:range class:Polygon ;
 	rdfs:comment "The range of this property describes the geometry of a connected component." .
-property:traversable_for a rdf:Property ;
+property:traversability_req a rdf:Property ;
 	rdfs:domain class:SpaceTime ;
 	rdfs:range class:TraversabilityReq ;
 	rdfs:comment "Points to constraints that must be satisfied for a target to traverse this space" .

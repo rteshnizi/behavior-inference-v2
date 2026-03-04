@@ -1,0 +1,113 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix class: <https://rezateshnizi.com/rt-bi-v2/class#> .
+@prefix property: <https://rezateshnizi.com/rt-bi-v2/property#> .
+@prefix x: <https://rezateshnizi.com/env/xs#> .
+@prefix y: <https://rezateshnizi.com/env/ys#> .
+@prefix pt: <https://rezateshnizi.com/env/pts#> .
+@prefix polygon: <https://rezateshnizi.com/env/polys#> .
+@prefix t: <https://rezateshnizi.com/env/ts#> .
+@prefix interval: <https://rezateshnizi.com/env/intervals#> .
+@prefix material: <https://rezateshnizi.com/env/materials#> .
+@prefix transportation: <https://rezateshnizi.com/env/transportations#> .
+@prefix traversability: <https://rezateshnizi.com/env/traversability_reqs#> .
+@prefix target: <https://rezateshnizi.com/env/targets#> .
+@prefix age_group: <https://rezateshnizi.com/env/age_groups#> .
+@prefix set: <https://rezateshnizi.com/env/sets#> .
+
+# region X coordinates
+x:x0 a class:X ; property:x_val 0.0 .
+x:x1 a class:X ; property:x_val 1000.0 .
+x:x2 a class:X ; property:x_val 2000.0 .
+x:x3 a class:X ; property:x_val 3000.0 .
+# endregion X coordinates
+
+# region Y coordinates
+y:y0 a class:Y ; property:y_val 0.0 .
+y:y1 a class:Y ; property:y_val 1000.0 .
+# endregion Y coordinates
+
+# region Points
+pt:pt0 a class:Pt ; property:coord x:x0 ; property:coord y:y0 .
+pt:pt1 a class:Pt ; property:coord x:x1 ; property:coord y:y0 .
+pt:pt2 a class:Pt ; property:coord x:x2 ; property:coord y:y0 .
+pt:pt3 a class:Pt ; property:coord x:x3 ; property:coord y:y0 .
+pt:pt4 a class:Pt ; property:coord x:x0 ; property:coord y:y1 .
+pt:pt5 a class:Pt ; property:coord x:x1 ; property:coord y:y1 .
+pt:pt6 a class:Pt ; property:coord x:x2 ; property:coord y:y1 .
+pt:pt7 a class:Pt ; property:coord x:x3 ; property:coord y:y1 .
+# endregion Points
+
+# region Polygons
+polygon:a a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt0 ;
+		rdf:_2 pt:pt1 ;
+		rdf:_3 pt:pt5 ;
+		rdf:_4 pt:pt4 ;
+	] .
+
+polygon:b a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt2 ;
+		rdf:_2 pt:pt3 ;
+		rdf:_3 pt:pt7 ;
+		rdf:_4 pt:pt6 ;
+	] .
+
+polygon:bridge a class:Polygon ;
+	property:vertices [ a class:PtSeq ;
+		rdf:_1 pt:pt1 ;
+		rdf:_2 pt:pt2 ;
+		rdf:_3 pt:pt6 ;
+		rdf:_4 pt:pt5
+	] .
+
+# endregion Polygons
+
+# region Space-Time Material Definitions
+material:obstacle a class:Material ; property:name "obstacle" ; property:color "BLACK" .
+material:water a class:Material ; property:name "water" ; property:color "BLUE_LIGHT" .
+material:carpet a class:Material ; property:name "carpet" ; property:color "PURPLE" .
+material:wood a class:Material ; property:name "wood" ; property:color "BROWN" .
+material:tile a class:Material ; property:name "tile" ; property:color "WHITE" .
+material:cement a class:Material ; property:name "cement" ; property:color "GREY_LIGHT" .
+material:asphalt a class:Material ; property:name "asphalt" ; property:color "GREY" .
+material:grass a class:Material ; property:name "grass" ; property:color "GREEN" .
+material:bush a class:Material ; property:name "bush" ; property:color "GREEN_DARK" .
+material:metal a class:Material ; property:name "metal" ; property:color "ORANGE" .
+# endregion Space-Time Material Definitions
+
+# region Target Property Definitions
+transportation:walking a class:Transportation ; property:name "walking" .
+transportation:swimming a class:Transportation ; property:name "swimming" .
+transportation:vehicle a class:Transportation ; property:name "vehicle" .
+transportation:bicycle a class:Transportation ; property:name "bicycle" .
+# endregion Target Property Definitions
+
+# region Traversability Requirements
+traversability:bridge a class:TraversabilityReq ;
+	property:transportation_req transportation:walking ;
+	property:max_diameter 3.0 .
+# endregion Traversability Requirements
+
+# region Space-Time Sets
+set:a a class:SpaceTime ;
+	property:name "A" ;
+	property:geometry polygon:a ;
+	property:material material:cement .
+
+set:b a class:SpaceTime ;
+	property:name "B" ;
+	property:geometry polygon:b ;
+	property:material material:cement .
+
+set:bridge a class:SpaceTime ;
+	property:name "Bridge" ;
+	property:geometry polygon:bridge ;
+	property:material material:wood ;
+	property:traversability_req traversability:bridge .
+# endregion Space-Time Sets
+
+# Targets will be inserted at runtime

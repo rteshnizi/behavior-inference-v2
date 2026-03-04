@@ -3,18 +3,18 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix class: <https://rezateshnizi.com/rt-bi-v2/class#> .
 @prefix property: <https://rezateshnizi.com/rt-bi-v2/property#> .
-@prefix x: <https://rezateshnizi.com/ex2-map/xs#> .
-@prefix y: <https://rezateshnizi.com/ex2-map/ys#> .
-@prefix pt: <https://rezateshnizi.com/ex2-map/pts#> .
-@prefix polygon: <https://rezateshnizi.com/ex2-map/polys#> .
-@prefix t: <https://rezateshnizi.com/ex2-map/ts#> .
-@prefix interval: <https://rezateshnizi.com/ex2-map/intervals#> .
-@prefix material: <https://rezateshnizi.com/ex2-map/materials#> .
-@prefix transportation: <https://rezateshnizi.com/ex2-map/transportations#> .
-@prefix traversability: <https://rezateshnizi.com/ex2-map/traversability_reqs#> .
-@prefix target: <https://rezateshnizi.com/ex2-map/targets#> .
-@prefix age_group: <https://rezateshnizi.com/ex2-map/age_groups#> .
-@prefix set: <https://rezateshnizi.com/ex2-map/sets#> .
+@prefix x: <https://rezateshnizi.com/env/xs#> .
+@prefix y: <https://rezateshnizi.com/env/ys#> .
+@prefix pt: <https://rezateshnizi.com/env/pts#> .
+@prefix polygon: <https://rezateshnizi.com/env/polys#> .
+@prefix t: <https://rezateshnizi.com/env/ts#> .
+@prefix interval: <https://rezateshnizi.com/env/intervals#> .
+@prefix material: <https://rezateshnizi.com/env/materials#> .
+@prefix transportation: <https://rezateshnizi.com/env/transportations#> .
+@prefix traversability: <https://rezateshnizi.com/env/traversability_reqs#> .
+@prefix target: <https://rezateshnizi.com/env/targets#> .
+@prefix age_group: <https://rezateshnizi.com/env/age_groups#> .
+@prefix set: <https://rezateshnizi.com/env/sets#> .
 
 # region X coordinates
 x:x0 a class:X ; property:x_val 0.0 .
@@ -381,49 +381,49 @@ set:a a class:SpaceTime ;
 	property:name "A" ;
 	property:geometry polygon:a ;
 	property:material material:cement ;
-	property:traversability_for traversability:room .
+	property:traversability_req traversability:room .
 
 set:b a class:SpaceTime ;
 	property:name "B" ;
 	property:geometry polygon:b ;
 	property:material material:cement ;
-	property:traversability_for traversability:room .
+	property:traversability_req traversability:room .
 
 set:c a class:SpaceTime ;
 	property:name "C" ;
 	property:geometry polygon:c ;
 	property:material material:cement ;
-	property:traversability_for traversability:room .
+	property:traversability_req traversability:room .
 
 set:r1 a class:SpaceTime ;
 	property:name "R1" ;
 	property:geometry polygon:river_1 ;
 	property:material material:water ;
-	property:traversability_for traversability:river .
+	property:traversability_req traversability:river .
 
 set:r2 a class:SpaceTime ;
 	property:name "R2" ;
 	property:geometry polygon:river_2 ;
 	property:material material:water ;
-	property:traversability_for traversability:river .
+	property:traversability_req traversability:river .
 
 set:r3 a class:SpaceTime ;
 	property:name "R3" ;
 	property:geometry polygon:river_3 ;
 	property:material material:water ;
-	property:traversability_for traversability:river .
+	property:traversability_req traversability:river .
 
 # set:r4 a class:SpaceTime ;
 # 	property:name "R4" ;
 # 	property:geometry polygon:bridge ;
 # 	property:material material:water ;
-# 	property:traversability_for traversability:under_bridge .
+# 	property:traversability_req traversability:under_bridge .
 
 set:r5 a class:SpaceTime ;
 	property:name "R5" ;
 	property:geometry polygon:river_5 ;
 	property:material material:water ;
-	property:traversability_for traversability:river .
+	property:traversability_req traversability:river .
 
 set:ww1 a class:SpaceTime ;
 	property:name "WW1" ;
@@ -469,63 +469,61 @@ set:bridge a class:SpaceTime ;
 	property:name "Bridge" ;
 	property:geometry polygon:bridge ;
 	property:material material:wood ;
-	property:traversability_for traversability:bridge .
+	property:traversability_req traversability:bridge .
 
 set:door_1 a class:SpaceTime ;
 	property:name "Door 1" ;
 	property:geometry polygon:door_1 ;
 	property:material material:metal ;
-	property:traversability_for traversability:door .
+	property:traversability_req traversability:door .
 
 set:door_b a class:SpaceTime ;
 	property:name "Door B" ;
 	property:geometry polygon:door_b ;
 	property:material material:metal ;
-	property:traversability_for traversability:door .
+	property:traversability_req traversability:door .
 
 set:a_1 a class:SpaceTime ;
 	property:name "Asphalt 1" ;
 	property:geometry polygon:asphalt_1 ;
 	property:material material:asphalt ;
-	property:traversability_for traversability:unrestricted .
+	property:traversability_req traversability:unrestricted .
 
 set:a_2 a class:SpaceTime ;
 	property:name "Asphalt 2" ;
 	property:geometry polygon:asphalt_2 ;
 	property:material material:asphalt ;
-	property:traversability_for traversability:unrestricted .
+	property:traversability_req traversability:unrestricted .
 
 set:a_3 a class:SpaceTime ;
 	property:name "Asphalt 3" ;
 	property:geometry polygon:asphalt_3 ;
 	property:material material:asphalt ;
-	property:traversability_for traversability:unrestricted .
+	property:traversability_req traversability:unrestricted .
 
 set:a_4 a class:SpaceTime ;
 	property:name "Asphalt 4" ;
 	property:geometry polygon:asphalt_4 ;
 	property:material material:asphalt ;
-	property:traversability_for traversability:unrestricted .
+	property:traversability_req traversability:unrestricted .
 
 set:a_5 a class:SpaceTime ;
 	property:name "Asphalt 5" ;
 	property:geometry polygon:asphalt_5 ;
 	property:material material:asphalt ;
-	property:traversability_for traversability:unrestricted .
+	property:traversability_req traversability:unrestricted .
 
 set:a_6 a class:SpaceTime ;
 	property:name "Asphalt 6" ;
 	property:geometry polygon:asphalt_6 ;
 	property:material material:asphalt ;
-	property:traversability_for traversability:unrestricted .
+	property:traversability_req traversability:unrestricted .
 
 set:a_7 a class:SpaceTime ;
 	property:name "Asphalt 7" ;
 	property:geometry polygon:asphalt_7 ;
 	property:material material:asphalt ;
-	property:traversability_for traversability:unrestricted .
+	property:traversability_req traversability:unrestricted .
 # endregion Space-Time Sets
 
-# region Targets
-target:target_1 a class:Target .
-# endregion Targets
+# Targets will be inserted at runtime
