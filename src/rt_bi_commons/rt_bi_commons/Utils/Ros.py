@@ -69,6 +69,7 @@ def Log(msg: str, l: Iterable | None = None, indentStr = "\t\t", severity: Loggi
 	if l is not None:
 		sep = f"\n{indentStr}"
 		if isinstance(l, str): l = [l]
+		elif isinstance(l, dict): l = [f"({repr(k)}, {repr(v)})" for k, v in l.items()]
 		else: l = [m if isinstance(m, str) else repr(m) for m in l]
 		indentedStr = sep.join(l)
 		msg = f"{msg}:{sep}{indentedStr}"
