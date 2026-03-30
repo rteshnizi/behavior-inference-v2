@@ -29,12 +29,16 @@ class BehaviorIGraph(NxUtils.Graph):
 
 	def isTraversableBy(self, node: NodeId, attrs: TargetAttributes) -> bool:
 		"""Return True if attrs are compatible with the traversability requirements of node."""
-		reqs = TraversabilityRequirements.fromDict(self.nodes[node].get("traversability_reqs"))
+		reqsDict = self.nodes[node].get("traversability_reqs")
+		if reqsDict is None: raise ValueError(f"Node {node} does not have traversability requirements")
+		reqs = TraversabilityRequirements.fromDict(reqsDict)
 		return isCompatible(reqs, attrs)
 
 	def updateAttributes(self, node: NodeId, attrs: TargetAttributes) -> TargetAttributes:
 		"""Return attrs narrowed/enriched by the traversability requirements of node."""
-		reqs = TraversabilityRequirements.fromDict(self.nodes[node].get("traversability_reqs"))
+		reqsDict = self.nodes[node].get("traversability_reqs")
+		if reqsDict is None: raise ValueError(f"Node {node} does not have traversability requirements")
+		reqs = TraversabilityRequirements.fromDict(reqsDict)
 		return inferAttributes(reqs, attrs)
 
 	def propagate(self, source: NodeId, visited: set[NodeId]) -> dict[NodeId, list[NodeId]]:
@@ -62,6 +66,7 @@ class BehaviorIGraph(NxUtils.Graph):
 		for node in d["nodes"]:
 			node["id"] = NodeId.fromDict(node["id"])
 			node["predicates"] = Predicates(node["predicates"])
+			node["traversability_reqs"] = TraversabilityRequirements.fromDict(node["traversability_reqs"]).asDict()
 			# traversability_reqs is already a plain dict (or None) — keep as-is for
 			# lazy deserialization in isTraversableBy / updateAttributes
 		for adj in d["adjacency"]:

@@ -127,7 +127,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		if token["attributes"]:
 			for key, val in token["attributes"].items():
 				if key == "transportation_mode":
-					for mode in val:
+					for mode in val: # pyright: ignore[reportGeneralTypeIssues]
 						pred = Msgs.RtBi.Predicate(name="transportation_mode", value=mode)
 						Ros.AppendMessage(tokenMsg.attributes, pred)
 				elif isinstance(val, float):
@@ -160,20 +160,21 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			visited: set[NodeId] = set()
 			for nId in token["path"]: visited.add(nId)
 			# BFS
-			# if fromState == "Q2": Ros.Log(f"===== Path {token['id']}", token['path'])
 			extensions = iGraph.propagateOneStep(token["path"][-1], visited)
 			if len(extensions) == 0: self.__addToken(fromState, token)
 			for destination in extensions:
 				if destination in visited: continue
-				# Req #2/#3: skip hop if token attributes conflict with region requirements
+				Ros.Log(f"Destination {destination}", [iGraph.nodes[destination].get("traversability_reqs")], "\t\t", Ros.LoggingSeverity.ERROR)
+				Ros.Log(f"Token {token['id']}", token["attributes"], "\t\t", Ros.LoggingSeverity.ERROR)
+				# Skip hop if token attributes conflict with region requirements
 				if not iGraph.isTraversableBy(destination, token["attributes"]): continue
 				visited.add(destination)
-				# Req #4: enrich/narrow token attributes based on region requirements
+				# Narrow token attributes based on region requirements
 				newAttributes = iGraph.updateAttributes(destination, token["attributes"])
+				Ros.Log(f"Updated Attributes for Token {token['id']}", newAttributes, "\t\t", Ros.LoggingSeverity.ERROR)
 				path = self.__extendPath(token["path"], extensions[destination])
 				newToken = self.__createToken(path, attributes=newAttributes)
 				ps = iGraph.getContent(destination, "predicates")
-				# Ros.Log(f"Destination {destination}", [(p, ps[p]) for p in ps])
 				if iGraph.satisfies(destination, statement):
 					self.__addToken(toState, newToken)
 					if toState in self.__accepting:
@@ -286,6 +287,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					d[state].append({
 						"id": t["id"],
 						"iGraphNode": repr(t["path"][-1]),
+						"attributes": repr(t["attributes"]),
 					})
 		return d
 

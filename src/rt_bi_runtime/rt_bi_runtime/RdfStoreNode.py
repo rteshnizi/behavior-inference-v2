@@ -57,7 +57,7 @@ class RdfStoreNode(DataDictionaryNode[_Parameters]):
 			"transition_grammar_dir": StrParser[_Parameters](self, "transition_grammar_dir"),
 			"transition_grammar_file": StrParser[_Parameters](self, "transition_grammar_file"),
 		}
-		newKw = { "node_name": "dd_rdf", "loggingSeverity": Ros.LoggingSeverity.WARN, **kwArgs}
+		newKw = { "node_name": "dd_rdf", "loggingSeverity": Ros.LoggingSeverity.INFO, **kwArgs}
 		super().__init__(parsers, **newKw)
 		self.__baseDir = get_package_share_directory(package_name)
 		self.__httpInterface = FusekiInterface(self, self["fuseki_server"][0], self["rdf_store"][0])
@@ -161,7 +161,8 @@ class RdfStoreNode(DataDictionaryNode[_Parameters]):
 		raise RuntimeError(f"Unexpected template query param: {templateParam}")
 
 	def __onToken(self, msg: Msgs.RtBi.Token) -> None:
-		Ros.Log("TODO: Insert token", [msg])
+		# Ros.Log("TODO: Insert token", [msg])
+		pass
 
 	def render(self) -> None:
 		return super().render()

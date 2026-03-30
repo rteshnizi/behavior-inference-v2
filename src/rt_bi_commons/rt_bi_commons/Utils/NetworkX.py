@@ -9,6 +9,7 @@ from typing_extensions import Generic, Literal, LiteralString, Optional, Protoco
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Shared.Pose import Coords
 from rt_bi_commons.Shared.Predicates import Predicates
+from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Geometry import GeometryLib
 from rt_bi_commons.Utils.RViz import RViz
@@ -38,6 +39,7 @@ class NodeData(Generic[_Polygon]):
 	"""The variables of this Class will be stored node attribute key-values."""
 	polygon: Optional[_Polygon] = None
 	predicates: Optional[Predicates] = None
+	traversability_reqs: Optional[TraversabilityRequirements] = None
 
 @dataclass(frozen=True)
 class EdgeData:

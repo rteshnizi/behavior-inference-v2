@@ -117,18 +117,16 @@ class RegionsSubscriber(RtBiNode, ABC):
 			self.__storeGeometry(poly.id.regionId, poly)
 		return
 
-	def __parseTraversability(self, regularSet: Msgs.RtBi.RegularSet) -> TraversabilityRequirements | None:
-		from math import isnan
+	def __parseTraversability(self, regularSet: Msgs.RtBi.RegularSet) -> TraversabilityRequirements:
 		transport_req = list(regularSet.traversability_transport_req)
-		max_diameter = None if isnan(regularSet.traversability_max_diameter) else regularSet.traversability_max_diameter
-		min_clearance = None if isnan(regularSet.traversability_min_clearance) else regularSet.traversability_min_clearance
-		if not transport_req and max_diameter is None and min_clearance is None:
-			return None
-		return TraversabilityRequirements(
+		max_diameter = float("inf") if regularSet.traversability_max_diameter < 0 else regularSet.traversability_max_diameter
+		max_clearance = float("inf") if regularSet.traversability_max_clearance < 0 else regularSet.traversability_max_clearance
+		t = TraversabilityRequirements(
 			transportation_req=transport_req,
 			max_diameter=max_diameter,
-			min_clearance=min_clearance,
+			max_clearance=max_clearance,
 		)
+		return t
 
 	def __createTracklets(self, regularSet: Msgs.RtBi.RegularSet) -> dict[str, Tracklet]:
 		tracklets = {}

@@ -125,7 +125,7 @@ class MetricIGraph(NxUtils.Graph[GraphPolygon]):
 			node = cast(dict[str, Any], node)
 			poly = cast(GraphPolygon, node["polygon"])
 			node["predicates"] = poly.predicates
-			node["traversability_reqs"] = poly.traversability_reqs.asDict() if poly.traversability_reqs else None
+			node["traversability_reqs"] = poly.traversability_reqs
 			node.pop("polygon")
 			node.pop("subset")
 		return dumps(jsonDict, default=vars)

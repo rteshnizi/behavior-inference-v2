@@ -3,6 +3,7 @@ from typing import Literal
 from rt_bi_commons.Shared.Color import RGBA, ColorNames
 from rt_bi_commons.Shared.Pose import Coords, CoordsList
 from rt_bi_commons.Shared.Predicates import Predicates
+from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
 from rt_bi_core.Spatial.Polygon import Polygon
 
 
@@ -18,6 +19,7 @@ class DynamicPolygon(Polygon):
 			predicates: Predicates,
 			timeNanoSecs: int,
 			hIndex: int,
+			traversability_reqs: TraversabilityRequirements,
 			**kwArgs
 		) -> None:
 		kwArgs.pop("centerOfRotation", None)
@@ -30,6 +32,7 @@ class DynamicPolygon(Polygon):
 			predicates=predicates,
 			timeNanoSecs=timeNanoSecs,
 			hIndex=hIndex,
+			traversability_reqs=traversability_reqs,
 			**kwArgs
 		)
 		return

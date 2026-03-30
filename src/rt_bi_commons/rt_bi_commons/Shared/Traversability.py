@@ -1,32 +1,32 @@
 from dataclasses import dataclass, field
 from typing import TypedDict
 
+from rt_bi_commons.Utils import Ros
+
 
 @dataclass
 class TraversabilityRequirements:
 	"""Constraints a spatial region places on traversing targets."""
 	transportation_req: list[str] = field(default_factory=list)
 	"""Allowed transportation modes. Empty list means unconstrained."""
-	max_diameter: float | None = None
-	"""Maximum target diameter in metres. None means unconstrained."""
-	min_clearance: float | None = None
-	"""Minimum clearance required in metres. None means unconstrained."""
+	max_diameter: float = float("inf")
+	"""Maximum target diameter in metres."""
+	max_clearance: float = float("inf")
+	"""Maximum clearance in metres."""
 
 	@staticmethod
-	def fromDict(d: dict | None) -> "TraversabilityRequirements | None":
-		if d is None:
-			return None
+	def fromDict(d: dict) -> "TraversabilityRequirements":
 		return TraversabilityRequirements(
 			transportation_req=d.get("transportation_req", []),
-			max_diameter=d.get("max_diameter"),
-			min_clearance=d.get("min_clearance"),
+			max_diameter=d.get("max_diameter", float("inf")),
+			max_clearance=d.get("min_clearance", float("inf")),
 		)
 
 	def asDict(self) -> dict:
 		return {
 			"transportation_req": self.transportation_req,
 			"max_diameter": self.max_diameter,
-			"min_clearance": self.min_clearance,
+			"max_clearance": self.max_clearance,
 		}
 
 
@@ -43,7 +43,7 @@ class TargetAttributes(TypedDict, total=False):
 	"""Physical height of the target in metres."""
 
 
-def isCompatible(reqs: TraversabilityRequirements | None, attrs: TargetAttributes) -> bool:
+def isCompatible(reqs: TraversabilityRequirements, attrs: TargetAttributes) -> bool:
 	"""
 	Return True when attrs are compatible with reqs.
 
@@ -68,14 +68,14 @@ def isCompatible(reqs: TraversabilityRequirements | None, attrs: TargetAttribute
 			return False
 
 	# Clearance check
-	if reqs.min_clearance is not None and "height" in attrs:
-		if attrs["height"] < reqs.min_clearance:
+	if reqs.max_clearance is not None and "height" in attrs:
+		if attrs["height"] > reqs.max_clearance:
 			return False
 
 	return True
 
 
-def inferAttributes(reqs: TraversabilityRequirements | None, attrs: TargetAttributes) -> TargetAttributes:
+def inferAttributes(reqs: TraversabilityRequirements, attrs: TargetAttributes) -> TargetAttributes:
 	"""
 	Return a copy of attrs enriched/narrowed by traversing a region with reqs.
 

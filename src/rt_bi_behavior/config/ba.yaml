@@ -17,8 +17,8 @@ rt_bi_behavior:
         - "Q0"
         - "Q1"
       transitions_predicate:
+        - 'name == "A"'
         - 'name == "B"'
-        - 'name == "C"'
       transitions_to:
         - "Q1"
         - "Q2"

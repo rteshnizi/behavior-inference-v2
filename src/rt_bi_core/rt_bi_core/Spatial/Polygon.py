@@ -65,10 +65,10 @@ class Polygon(ABC):
 			predicates: Predicates,
 			timeNanoSecs: int,
 			hIndex: int,
+			traversability_reqs: TraversabilityRequirements,
 			interiorColor: RGBA = ColorNames.GREY_DARK,
 			interior: Shapely.Polygon | None = None,
 			renderLineWidth = 2.5,
-			traversability_reqs: TraversabilityRequirements | None = None,
 			**kwArgs
 		) -> None:
 		"""
@@ -93,7 +93,7 @@ class Polygon(ABC):
 		)
 		self.__RENDER_LINE_WIDTH = renderLineWidth
 		self.__interiorPolygon = Shapely.Polygon(envelope) if interior is None else interior
-		self.__interiorPolygon = Shapely.set_precision(self.__interiorPolygon, GeometryLib.EPSILON)
+		self.__interiorPolygon = Shapely.set_precision(self.__interiorPolygon, GeometryLib.EPSILON) # pyright: ignore[reportAttributeAccessIssue]
 		self.__envelope = GeometryLib.getGeometryCoords(self.__interiorPolygon) if len(envelope) == 0 else envelope
 		self.__DEFAULT_ENVELOPE_COLOR = envelopeColor
 		self.__INTERIOR_COLOR = interiorColor
@@ -140,7 +140,7 @@ class Polygon(ABC):
 		return
 
 	@property
-	def traversability_reqs(self) -> TraversabilityRequirements | None:
+	def traversability_reqs(self) -> TraversabilityRequirements:
 		return self.__traversability_reqs
 
 	@property
@@ -299,6 +299,6 @@ class Polygon(ABC):
 		polyMsg.center_of_rotation = Msgs.toPointMsg(self.centerOfRotation)
 		msg.polygons = [polyMsg]
 		msg.set_type = self.type.value
-		# msg.color = ColorNames.toStr(self.envelopeColor)
-		# msg.name = []
+		msg.traversability_max_diameter = -1.0
+		msg.traversability_max_clearance = -1.0
 		return msg

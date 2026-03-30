@@ -61,12 +61,13 @@
           row.insertCell(0).innerHTML = stateName
           row.insertCell(1).innerHTML = tokenObj["id"]
           row.insertCell(2).innerHTML = tokenObj["iGraphNode"]
+          row.insertCell(3).innerHTML = tokenObj["attributes"]
         });
       });
     });
 
     // Create a connection to the rosbridge WebSocket server.
-    ros.connect('ws://192.168.50.168:9090');
+    ros.connect('ws://192.168.1.78:9090');
   </script>
 </head>
 
@@ -91,7 +92,7 @@
     <h2>SVG</h2>
   </div>
   <table>
-    <thead><tr><th>State</th><th>Token</th><th>NodeId</th></tr></thead>
+    <thead><tr><th>State</th><th>Token</th><th>NodeId</th><th>Attributes</th></tr></thead>
     <tbody id="state-tokens"></tbody>
   </table>
 </body>

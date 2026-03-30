@@ -2,6 +2,7 @@ from math import isnan, nan
 from typing import Any, Final, Generic, TypeVar, cast
 
 from rt_bi_commons.Shared.Predicates import Predicates
+from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Geometry import AffineTransform, GeometryLib, Shapely
 from rt_bi_core.Spatial import PolygonFactory, PolygonFactoryKeys
@@ -61,6 +62,7 @@ class ContinuousTimePolygon(Generic[_T_Poly]):
 			"interior": poly,
 			"hIndex": -1,
 			"predicates": self.predicates(timeNanoSecs),
+			"traversability_reqs": self.traversabilityReqs(timeNanoSecs),
 		}
 		if self.type == SensingPolygon.type:
 			kwArgs["tracklets"] = {}
@@ -83,7 +85,7 @@ class ContinuousTimePolygon(Generic[_T_Poly]):
 		elif self.type == AffinePolygon.type:
 			Cls = AffinePolygon
 		elif self.type == TargetPolygon.type:
-			Cls = AffinePolygon
+			Cls = TargetPolygon
 		else:
 			raise AssertionError(f"Unexpected region type: {repr(self.type)} in {self.name}")
 		poly = PolygonFactory(Cls, kwArgs)
@@ -100,6 +102,11 @@ class ContinuousTimePolygon(Generic[_T_Poly]):
 		if self.length == 0: return Predicates([])
 		i = self.timeNanoSecsToIndex(timeNanoSecs)
 		return self.configs[i].predicates
+
+	def traversabilityReqs(self, timeNanoSecs: int) -> TraversabilityRequirements:
+		if self.length == 0: return TraversabilityRequirements([])
+		i = self.timeNanoSecsToIndex(timeNanoSecs)
+		return self.configs[i].traversability_reqs
 
 	@property
 	def name(self) -> str:

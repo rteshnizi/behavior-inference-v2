@@ -21,7 +21,7 @@ class ConnectivityGraph(NxUtils.Graph[GraphPolygon]):
 	@dataclass(frozen=True)
 	class NodeData(NxUtils.NodeData[GraphPolygon]): ...
 
-	TRACKLET_EXIT_MAX_DISTANCE: Final[int] = 10
+	TRACKLET_EXIT_MAX_DISTANCE: Final[int] = 100
 	def __init__(
 			self,
 			timeNanoSecs: int,
@@ -161,6 +161,7 @@ class ConnectivityGraph(NxUtils.Graph[GraphPolygon]):
 					predicates=mapPoly.predicates,
 					centerOfRotation=mapPoly.centerOfRotation,
 					envelopeColor=mapPoly.envelopeColor,
+					traversability_reqs=mapPoly.traversability_reqs,
 				))
 		else:
 			for sensor in self.sensors:
@@ -181,6 +182,7 @@ class ConnectivityGraph(NxUtils.Graph[GraphPolygon]):
 							predicates=mapPoly.predicates,
 							centerOfRotation=sensor.centerOfRotation,
 							tracklets=tracklets,
+							traversability_reqs=mapPoly.traversability_reqs,
 						))
 			for mapPoly in self.map:
 				diff = mapPoly.interior
@@ -200,6 +202,7 @@ class ConnectivityGraph(NxUtils.Graph[GraphPolygon]):
 						predicates=mapPoly.predicates,
 						centerOfRotation=mapPoly.centerOfRotation,
 						envelopeColor=mapPoly.envelopeColor,
+						traversability_reqs=mapPoly.traversability_reqs,
 					))
 
 		if len(shadowPolys) == 0: Ros.Logger().warn("No shadows produced.")

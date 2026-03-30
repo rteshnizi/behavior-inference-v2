@@ -53,7 +53,7 @@ class DataDictionaryNode(Generic[_K], RtBiNode, ABC):
 
 	def getParser(self, p: _K, castTo: type[_P]) -> _P:
 		if self.parsers[p] is None: raise KeyError(f"Parser not available for param {p}")
-		parser = cast(castTo, self.parsers[p])
+		parser = cast(castTo, self.parsers[p]) # pyright: ignore[reportInvalidTypeForm]
 		return parser
 
 	def __declareRefSources(self) -> None:

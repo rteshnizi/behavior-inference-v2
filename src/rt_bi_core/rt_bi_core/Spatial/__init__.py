@@ -2,6 +2,7 @@ from typing import Any, TypeAlias
 
 from typing_extensions import TypeVar
 
+from rt_bi_commons.Utils import Ros
 from rt_bi_core.Spatial.AffinePolygon import AffinePolygon
 from rt_bi_core.Spatial.DynamicPolygon import DynamicPolygon
 from rt_bi_core.Spatial.Polygon import Polygon, PolygonFactoryKeys
@@ -17,6 +18,7 @@ _T_Polygon = TypeVar("_T_Polygon", bound=Polygon)
 
 
 def PolygonFactory(PolyCls: type[_T_Polygon], kwArgs: dict[PolygonFactoryKeys, Any]) -> _T_Polygon:
+	Ros.Log(f"Creating Polygon of type {PolyCls.type}", kwArgs)
 	assert(
 		PolyCls.type == AffinePolygon.type or
 		PolyCls.type == DynamicPolygon.type or

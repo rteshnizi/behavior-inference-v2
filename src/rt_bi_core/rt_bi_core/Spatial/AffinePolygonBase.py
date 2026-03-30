@@ -3,6 +3,7 @@ from abc import ABC
 from rt_bi_commons.Shared.Color import RGBA
 from rt_bi_commons.Shared.Pose import Coords, CoordsList
 from rt_bi_commons.Shared.Predicates import Predicates
+from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
 from rt_bi_core.Spatial.Polygon import Polygon
 
 
@@ -19,6 +20,7 @@ class AffinePolygonBase(Polygon, ABC):
 			centerOfRotation: Coords,
 			timeNanoSecs: int,
 			hIndex: int,
+			traversability_reqs: TraversabilityRequirements,
 			**kwArgs
 		) -> None:
 		super().__init__(
@@ -30,6 +32,7 @@ class AffinePolygonBase(Polygon, ABC):
 			envelopeColor=envelopeColor,
 			timeNanoSecs=timeNanoSecs,
 			hIndex=hIndex,
+			traversability_reqs=traversability_reqs,
 			**kwArgs
 		)
 		self.__centerOfRotation = centerOfRotation
