@@ -1,3 +1,8 @@
+# pyright: reportSelfClsParameterName=false
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportReturnType=false
+# pyright: reportArgumentType=false
+# pyright: reportAssignmentType=false
 import warnings
 from math import cos, inf, nan, sin, sqrt
 
@@ -20,32 +25,32 @@ class Shapely:
 	AnyObj: TypeAlias = Polygon | MultiPolygon | LineString | MultiLineString | Point | MultiPoint
 
 	@staticmethod
-	def __pointNeg(self: Point) -> Point: # pyright: ignore[reportSelfClsParameterName]
+	def __pointNeg(self: Point) -> Point: #
 		""" `-1 * Point` """
 		return Shapely.Point(-1 * self.x, -1 * self.y)
 
 	@staticmethod
-	def __pointAdd(self: Point, other: Point) -> Point: # pyright: ignore[reportSelfClsParameterName]
+	def __pointAdd(self: Point, other: Point) -> Point:
 		""" `Point + Point` """
 		return Shapely.Point(self.x + other.x, self.y + other.y)
 
 	@staticmethod
-	def __pointSub(self: Point, other: Point) -> Point: # pyright: ignore[reportSelfClsParameterName]
+	def __pointSub(self: Point, other: Point) -> Point:
 		""" `Point - Point` """
 		return Shapely.Point(self.x - other.x, self.y - other.y)
 
 	@staticmethod
-	def __pointDivScalar(self: Point, num: float) -> Point: # pyright: ignore[reportSelfClsParameterName]
+	def __pointDivScalar(self: Point, num: float) -> Point:
 		""" `Point / num` """
 		return Shapely.Point(self.x / num, self.y / num)
 
 	@staticmethod
-	def __pointMulScalar(self: Point, num: float) -> Point: # pyright: ignore[reportSelfClsParameterName]
+	def __pointMulScalar(self: Point, num: float) -> Point:
 		""" `Point * num` """
 		return Shapely.Point(self.x * num, self.y * num)
 
 	@staticmethod
-	def __connectedGeometryRepr(self: ConnectedComponent) -> str: # pyright: ignore[reportSelfClsParameterName]
+	def __connectedGeometryRepr(self: ConnectedComponent) -> str:
 		coordsList = GeometryLib.getGeometryCoords(self)
 		numCoords = f"#{len(coordsList)}"
 		valid = f"v:{'Y' if self.is_valid else 'N'}"
@@ -53,7 +58,7 @@ class Shapely:
 		return ", ".join([numCoords, valid, empty])
 
 	@staticmethod
-	def __multiGeometryRepr(self: MultiComponent) -> str: # pyright: ignore[reportSelfClsParameterName]
+	def __multiGeometryRepr(self: MultiComponent) -> str:
 		return "{%s}" % ", ".join([repr(o) for o in self.geoms])
 
 	Point.__neg__ = __pointNeg
@@ -131,23 +136,23 @@ class GeometryLib:
 	@staticmethod
 	def addCoords(c1: __Coords, c2: __Coords) -> __Coords:
 		(x, y) = (c1[0] + c2[0], c1[1] + c2[1])
-		if len(c1) == 2: return (x, y) # pyright: ignore[reportReturnType]
+		if len(c1) == 2: return (x, y)
 		z = c1[2] + c2[2]
-		return (x, y, z) # pyright: ignore[reportReturnType]
+		return (x, y, z)
 
 	@staticmethod
 	def subtractCoords(c1: __Coords, c2: __Coords) -> __Coords:
 		(x, y) = (c1[0] - c2[0], c1[1] - c2[1])
-		if len(c1) == 2: return (x, y) # pyright: ignore[reportReturnType]
+		if len(c1) == 2: return (x, y)
 		z = c1[2] - c2[2]
-		return (x, y, z) # pyright: ignore[reportReturnType]
+		return (x, y, z)
 
 	@staticmethod
 	def scaleCoords(c1: __Coords, s: float) -> __Coords:
 		(x, y) = (c1[0] * s, c1[1] * s)
-		if len(c1) == 2: return (x, y) # pyright: ignore[reportReturnType]
+		if len(c1) == 2: return (x, y)
 		z = c1[2] * s
-		return (x, y, z) # pyright: ignore[reportReturnType]
+		return (x, y, z)
 
 	@staticmethod
 	def coordsDistance(coords1: Coords | Coords3d, coords2: Coords | Coords3d) -> float:
@@ -197,10 +202,10 @@ class GeometryLib:
 		if len(vect) == 2:
 			(x, y) = cast(GeometryLib.Vector, vect)
 			distance = GeometryLib.vectLength(x, y)
-			return (x / distance, y / distance) # pyright: ignore[reportReturnType]
+			return (x / distance, y / distance)
 		(x, y, z) = cast(GeometryLib.Vector3d, vect)
 		distance = GeometryLib.vectLength(x, y, z)
-		return (x / distance, y / distance, z / distance) # pyright: ignore[reportReturnType]
+		return (x / distance, y / distance, z / distance)
 
 	@staticmethod
 	def getUnitVectorFromAngle(theta: float) -> Vector:
@@ -239,7 +244,7 @@ class GeometryLib:
 			if not hasattr(geom, "coords"):
 				raise ValueError(f"Unknown geometry: {repr(geom)}")
 			return list(geom.coords)
-		return list(geom.exterior.coords)
+		return list(geom.exterior.coords) # pyright: ignore[reportReturnType, reportAttributeAccessIssue]
 
 	@staticmethod
 	def lineSegmentsAreAlmostEqual(l1: Shapely.LineString, l2: Shapely.LineString) -> bool:
@@ -433,7 +438,7 @@ class GeometryLib:
 		`Coords`
 			The center of rotation if there exists one, `(nan, nan)` otherwise.
 		"""
-		matrix = transformation.params # pyright: ignore[reportAttributeAccessIssue]
+		matrix = transformation.params
 		# [[a0  a1  a2]
 		#  [b0  b1  b2]
 		#  [0   0    1]]
@@ -461,7 +466,7 @@ class GeometryLib:
 		bool
 			True if the sum of element-wise diff between the matrix and identity matrix is almost zero.
 		"""
-		matrix = transformation.params # pyright: ignore[reportAttributeAccessIssue]
+		matrix = transformation.params
 		if ((matrix - np.identity(3)).sum()) < GeometryLib.EPSILON: return True
 		return False
 
@@ -514,7 +519,7 @@ class GeometryLib:
 		if param > 1 or param < 0: raise ValueError("Parameter should be in range [0, 1]. Given param = %f" % param)
 		# Easy cases that do not need calculation
 		if param == 0: return AffineTransform()
-		if param == 1: return AffineTransform(transformation.params) # pyright: ignore[reportAttributeAccessIssue]
+		if param == 1: return AffineTransform(transformation.params)
 		scale = [((transformation.scale[0] - 1) * param) + 1, ((transformation.scale[1] - 1) * param) + 1]
 		rotations = Rotation.from_matrix((
 			[
@@ -523,8 +528,8 @@ class GeometryLib:
 				[0, 0, 1]
 			],
 			[
-				[transformation.params[0][0], transformation.params[0][1], 0], # pyright: ignore[reportAttributeAccessIssue]
-				[transformation.params[1][0], transformation.params[1][1], 0], # pyright: ignore[reportAttributeAccessIssue]
+				[transformation.params[0][0], transformation.params[0][1], 0],
+				[transformation.params[1][0], transformation.params[1][1], 0],
 				[0, 0, 1]
 			]))
 		slerp = Slerp([0, 1], rotations)
@@ -541,7 +546,7 @@ class GeometryLib:
 
 	@staticmethod
 	def applyMatrixTransformToCoordsList(transformation: AffineTransform, coordsList: CoordsList) -> CoordsList:
-		transformedCoords = matrix_transform(coordsList, transformation.params) # pyright: ignore[reportAttributeAccessIssue]
+		transformedCoords = matrix_transform(coordsList, transformation.params)
 		return transformedCoords
 
 	@staticmethod

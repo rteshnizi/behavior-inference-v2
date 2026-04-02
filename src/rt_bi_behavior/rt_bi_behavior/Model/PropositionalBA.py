@@ -122,7 +122,6 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 
 	def __createToken(self, path: list[NodeId], attributes: TargetAttributes | None = None) -> Token:
 		token = Token(id=f"{self.__tokenCounter}", path=path, attributes=attributes or TargetAttributes())
-		Ros.Log(f"Created token {token['id']} with path ending in", [token["path"][-1]])
 		tokenMsg = Msgs.RtBi.Token(id=token["id"])
 		if token["attributes"]:
 			for key, val in token["attributes"].items():
@@ -164,18 +163,36 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			if len(extensions) == 0: self.__addToken(fromState, token)
 			for destination in extensions:
 				if destination in visited: continue
-				Ros.Log(f"Destination {destination}", [iGraph.nodes[destination].get("traversability_reqs")], "\t\t", Ros.LoggingSeverity.ERROR)
-				Ros.Log(f"Token {token['id']}", token["attributes"], "\t\t", Ros.LoggingSeverity.ERROR)
+				Ros.Log(
+					f"---> Evaluating Destination {destination} <==> Token {token['id']}",
+					{
+						"Req": iGraph.nodes[destination].get("traversability_reqs"),
+						"Attr": token["attributes"],
+					},
+					# severity=Ros.LoggingSeverity.ERROR
+				)
 				# Skip hop if token attributes conflict with region requirements
-				if not iGraph.isTraversableBy(destination, token["attributes"]): continue
+				if not iGraph.isTraversableBy(destination, token["attributes"]):
+					Ros.Log(f"Token {token['id']} cannot traverse to Destination {destination}")
+					continue
 				visited.add(destination)
 				# Narrow token attributes based on region requirements
 				newAttributes = iGraph.updateAttributes(destination, token["attributes"])
-				Ros.Log(f"Updated Attributes for Token {token['id']}", newAttributes, "\t\t", Ros.LoggingSeverity.ERROR)
 				path = self.__extendPath(token["path"], extensions[destination])
 				newToken = self.__createToken(path, attributes=newAttributes)
+				Ros.Log(
+					f"Created token {newToken['id']} based on {token['id']}",
+					{"PRV Attr": token["attributes"], "NEW Attr": newToken["attributes"]},
+					# severity=Ros.LoggingSeverity.ERROR
+				)
+				Ros.Log(
+					f"Token {newToken['id']} path",
+					newToken["path"],
+					# severity=Ros.LoggingSeverity.ERROR
+				)
 				ps = iGraph.getContent(destination, "predicates")
 				if iGraph.satisfies(destination, statement):
+					Ros.Log(f"Token {newToken['id']} transitioned from {fromState} to {toState}.", severity=Ros.LoggingSeverity.ERROR)
 					self.__addToken(toState, newToken)
 					if toState in self.__accepting:
 						Ros.Log(f"ACCEPTING {newToken['id']}", newToken["path"], severity=Ros.LoggingSeverity.ERROR)
@@ -189,7 +206,8 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		i = 0
 		while i < (len(tokens)):
 			if tokens[i]["path"][-1] not in iGraph.nodes: # Token has expired as the node is not in history anymore
-				Ros.Log("TODO: REMOVE TOKEN FROM RDF STORE")
+				# TODO: REMOVE TOKEN FROM RDF STORE
+				Ros.Log(f"KILLED token {tokens[i]['id']} with path:", tokens[i]['path'])
 				tokens.pop(i)
 				i -= 1
 			i += 1
@@ -249,6 +267,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			if cast(NodeId, nodeId).regionId.startswith("https://rezateshnizi.com/env/defintion/av"): continue
 			token = self.__createToken([nodeId], attributes=TargetAttributes())
 			self.states[self.__start]["tokens"].append(token)
+			Ros.Log(f"Initialized Token {token['id']} with path", token['path'])
 		self.__updateStateLabel(self.__start)
 		self.__initializedTokens = True
 		return

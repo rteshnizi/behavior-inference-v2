@@ -1,6 +1,6 @@
 from ctypes import c_int32
 from math import cos, sin
-from typing import Final
+from typing import Final, cast
 from zlib import adler32
 
 from rclpy.node import Publisher, Timer
@@ -156,7 +156,7 @@ class RViz:
 
 		if GeometryLib.coordsAreEqual(coordsList[0], coordsList[-1]): return polygon
 		# If the last vertex is not the same as the first one, we need to close the loop-back here.
-		Ros.AppendMessage(polygon.points, RViz.__createPointMessage(*coordsList[0]))
+		Ros.AppendMessage(polygon.points, RViz.__createPointMessage(*cast(Coords3d, coordsList[0])))
 		return polygon
 
 	@staticmethod

@@ -67,7 +67,11 @@ class BaNode(ColdStartable):
 	def __onEvent(self, msg: Msgs.RtBi.IGraph) -> None:
 		iGraph = BehaviorIGraph.fromMsg(msg)
 		if not self.__ba.initializedTokens: self.__ba.resetTokens(iGraph)
-		else: self.__ba.evaluate(iGraph)
+		# else: self.__ba.evaluate(iGraph)
+		# After initialization, we need to evaluate the the tokens,
+		# because their initial location may cause state transitions in the BA.
+		# I'm assuming the else statement above was an optimization that causes an incorrect behavior.
+		self.__ba.evaluate(iGraph)
 		return
 
 	def __onPredicates(self, predicateJsonStr: str) -> None:
