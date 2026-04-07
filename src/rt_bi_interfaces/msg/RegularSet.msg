@@ -23,8 +23,8 @@ rt_bi_interfaces/TimeInterval[] intervals
 # Traversability constraints on this region (from RDF store).
 # Empty / NaN means unconstrained.
 string[] traversability_transport_req
-float64 traversability_max_diameter    # < 0 = unconstrained
-float64 traversability_max_clearance   # < 0 = unconstrained
+string traversability_max_diameter    # empty string = unconstrained
+string traversability_max_height      # empty string = unconstrained
 
 ######################### Properties #########################
 # The fully qualified name of the associated ROS node.

@@ -299,6 +299,6 @@ class Polygon(ABC):
 		polyMsg.center_of_rotation = Msgs.toPointMsg(self.centerOfRotation)
 		msg.polygons = [polyMsg]
 		msg.set_type = self.type.value
-		msg.traversability_max_diameter = -1.0
-		msg.traversability_max_clearance = -1.0
+		msg.traversability_max_diameter = ""
+		msg.traversability_max_height = ""
 		return msg

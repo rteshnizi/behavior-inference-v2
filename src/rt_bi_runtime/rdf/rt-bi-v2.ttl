@@ -38,7 +38,13 @@ class:Material a rdfs:Class ;
 	rdfs:comment "The class of material specifications." .
 class:Transportation a rdfs:Class ;
 	rdfs:subClassOf class:Subject ;
-	rdfs:comment "The the way this target moves; i.e., mode of transportation." .
+	rdfs:comment "The way this target moves; i.e., mode of transportation." .
+class:Diameter a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The diameter category; e.g., narrow, medium, wide." .
+class:Height a rdfs:Class ;
+	rdfs:subClassOf class:Subject ;
+	rdfs:comment "The height category; e.g., short, medium, tall." .
 # SPACE-TIME SPEC
 class:TraversabilityReq a rdfs:Class ;
 	rdfs:comment "The class of traversal constraint specifications." .
@@ -53,11 +59,11 @@ property:transportation_req a rdf:Property ;
 # Size requirements
 property:max_diameter a rdf:Property ;
 	rdfs:domain class:TraversabilityReq ;
-	rdfs:range xsd:decimal ;
+	rdfs:range class:Diameter ;
 	rdfs:comment "Maximum diameter (in meters) that can traverse this space" .
-property:min_clearance a rdf:Property ;
+property:max_height a rdf:Property ;
 	rdfs:domain class:TraversabilityReq ;
-	rdfs:range xsd:decimal ;
+	rdfs:range class:Height ;
 	rdfs:comment "Maximum height requirement." .
 # endregion [SPACE-TIME PROPS]
 
@@ -151,11 +157,11 @@ property:channel a rdf:Property ;
 # region [TARGET PROPS]
 property:diameter a rdf:Property ;
 	rdfs:domain class:Target ;
-	rdfs:range xsd:decimal ;
+	rdfs:range class:Diameter ;
 	rdfs:comment "The target's diameter/width in meters." .
 property:height a rdf:Property ;
 	rdfs:domain class:Target ;
-	rdfs:range xsd:decimal ;
+	rdfs:range class:Height ;
 	rdfs:comment "The target's height in meters" .
 property:transportation_mode a rdf:Property ;
 	rdfs:domain class:Target ;

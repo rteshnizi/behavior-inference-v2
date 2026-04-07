@@ -104,8 +104,8 @@ class AffineRegionEmulator(Generic[_T_Poly], RtBiNode, ABC):
 		msg.channel = self.get_fully_qualified_name()
 		msg.predicates = [] # Inherit all other predicates
 		msg.set_type= self.__ctPoly.type.value
-		msg.traversability_max_diameter = -1.0
-		msg.traversability_max_clearance = -1.0
+		msg.traversability_max_diameter = ""
+		msg.traversability_max_height = ""
 		return msg
 
 	def render(self) -> None:

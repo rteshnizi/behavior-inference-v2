@@ -119,12 +119,10 @@ class RegionsSubscriber(RtBiNode, ABC):
 
 	def __parseTraversability(self, regularSet: Msgs.RtBi.RegularSet) -> TraversabilityRequirements:
 		transport_req = list(regularSet.traversability_transport_req)
-		max_diameter = float("inf") if regularSet.traversability_max_diameter < 0 else regularSet.traversability_max_diameter
-		max_clearance = float("inf") if regularSet.traversability_max_clearance < 0 else regularSet.traversability_max_clearance
 		t = TraversabilityRequirements(
 			transportation_req=transport_req,
-			max_diameter=max_diameter,
-			max_clearance=max_clearance,
+			max_diameter=regularSet.traversability_max_diameter,
+			max_height=regularSet.traversability_max_height,
 		)
 		return t
 

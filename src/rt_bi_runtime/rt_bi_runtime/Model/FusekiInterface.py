@@ -195,15 +195,15 @@ class FusekiInterface:
 			# Collect traversability — transportation_req may span multiple rows
 			transportModes: list[str] = []
 			msg.traversability_max_diameter = -1.0
-			msg.traversability_max_clearance = -1.0
+			msg.traversability_max_height = -1.0
 			while i < len(resultHelper) and resultHelper.strVarValue(i, "regularSetId") == regularSetId:
 				transport = resultHelper.strVarValue(i, "allowedTransport")
 				if transport:
 					transportModes.append(transport.split("#")[-1])  # strip IRI prefix
 				if resultHelper.contains(i, "maxDiameter"):
-					msg.traversability_max_diameter = resultHelper.floatVarValue(i, "maxDiameter")
+					msg.traversability_max_diameter = resultHelper.strVarValue(i, "maxDiameter")
 				if resultHelper.contains(i, "maxHeight"):
-					msg.traversability_max_clearance = resultHelper.floatVarValue(i, "maxHeight")
+					msg.traversability_max_height = resultHelper.strVarValue(i, "maxHeight")
 				i += 1
 			Ros.ConcatMessageArray(msg.traversability_transport_req, transportModes)
 			if setType == "static" or setType == "dynamic":

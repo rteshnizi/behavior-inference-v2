@@ -11,6 +11,8 @@
 @prefix interval: <https://rezateshnizi.com/env/intervals#> .
 @prefix material: <https://rezateshnizi.com/env/materials#> .
 @prefix transportation: <https://rezateshnizi.com/env/transportations#> .
+@prefix diameter: <https://rezateshnizi.com/env/diameters#> .
+@prefix height: <https://rezateshnizi.com/env/heights#> .
 @prefix traversability: <https://rezateshnizi.com/env/traversability_reqs#> .
 @prefix target: <https://rezateshnizi.com/env/targets#> .
 @prefix age_group: <https://rezateshnizi.com/env/age_groups#> .
@@ -345,17 +347,19 @@ transportation:walking a class:Transportation ; property:name "walking" .
 transportation:swimming a class:Transportation ; property:name "swimming" .
 transportation:vehicle a class:Transportation ; property:name "vehicle" .
 transportation:bicycle a class:Transportation ; property:name "bicycle" .
-interval:young a class:Interval ; property:min t:0 ; property:max t:60 ; property:include_min true ; property:include_max false .
-interval:old a class:Interval ; property:min t:60 ; property:include_min true ; property:include_max false .
-age_group:young a class:AgeGroup ; property:name "young" ; property:age_range interval:young .
-age_group:old a class:AgeGroup ; property:name "old" ; property:age_range interval:old .
+diameter:narrow a class:Diameter ; property:name "narrow" .
+diameter:medium a class:Diameter ; property:name "medium" .
+diameter:wide a class:Diameter ; property:name "wide" .
+height:short a class:Height ; property:name "short" .
+height:medium a class:Height ; property:name "medium" .
+height:tall a class:Height ; property:name "tall" .
 # endregion Target Property Definitions
 
 # region Traversability Requirements
 traversability:door a class:TraversabilityReq ;
 	property:transportation_req transportation:walking ;
-	property:max_diameter 0.8 ;
-	property:max_height 2.0 .
+	property:max_diameter diameter:narrow ;
+	property:max_height height:medium .
 traversability:river a class:TraversabilityReq ;
 	property:transportation_req transportation:swimming .
 traversability:room a class:TraversabilityReq ;
@@ -364,11 +368,11 @@ traversability:bridge a class:TraversabilityReq ;
 	property:transportation_req transportation:walking ;
 	property:transportation_req transportation:vehicle ;
 	property:transportation_req transportation:bicycle ;
-	property:max_diameter 3.0 .
+	property:max_diameter diameter:medium .
 traversability:under_bridge a class:TraversabilityReq ;
 	property:transportation_req transportation:swimming ;
-	property:max_diameter 2.0 ;
-	property:max_height 3.0 .
+	property:max_diameter diameter:narrow ;
+	property:max_height height:short .
 traversability:unrestricted a class:TraversabilityReq ;
 	property:transportation_req transportation:walking ;
 	property:transportation_req transportation:swimming ;

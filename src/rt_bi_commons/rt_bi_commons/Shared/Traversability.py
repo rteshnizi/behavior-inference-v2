@@ -1,32 +1,30 @@
 from dataclasses import dataclass, field
 from typing import TypedDict
 
-from rt_bi_commons.Utils import Ros
-
 
 @dataclass
 class TraversabilityRequirements:
 	"""Constraints a spatial region places on traversing targets."""
 	transportation_req: list[str] = field(default_factory=list)
 	"""Allowed transportation modes. Empty list means unconstrained."""
-	max_diameter: float = float("inf")
-	"""Maximum target diameter in metres."""
-	max_clearance: float = float("inf")
-	"""Maximum clearance in metres."""
+	max_diameter: str = ""
+	"""Maximum target diameter in categories."""
+	max_height: str = ""
+	"""Maximum clearance in categories."""
 
 	@staticmethod
 	def fromDict(d: dict) -> "TraversabilityRequirements":
 		return TraversabilityRequirements(
 			transportation_req=d.get("transportation_req", []),
-			max_diameter=d.get("max_diameter", float("inf")),
-			max_clearance=d.get("min_clearance", float("inf")),
+			max_diameter=d.get("max_diameter", ""),
+			max_height=d.get("max_height", ""),
 		)
 
 	def asDict(self) -> dict:
 		return {
 			"transportation_req": self.transportation_req,
 			"max_diameter": self.max_diameter,
-			"max_clearance": self.max_clearance,
+			"max_height": self.max_height,
 		}
 
 
@@ -37,10 +35,10 @@ class TargetAttributes(TypedDict, total=False):
 	"""
 	transportation_mode: list[str]
 	"""Set of possible transportation modes for this hypothesis."""
-	diameter: float
-	"""Physical diameter of the target in metres."""
-	height: float
-	"""Physical height of the target in metres."""
+	diameter: str
+	"""Physical diameter of the target in categories. e.g., narrow, medium, wide."""
+	height: str
+	"""Physical height of the target in categories. e.g., low, medium, high."""
 
 
 def isCompatible(reqs: TraversabilityRequirements, attrs: TargetAttributes) -> bool:
@@ -63,14 +61,14 @@ def isCompatible(reqs: TraversabilityRequirements, attrs: TargetAttributes) -> b
 			return False
 
 	# Diameter check
-	if reqs.max_diameter is not None and "diameter" in attrs:
-		if attrs["diameter"] > reqs.max_diameter:
-			return False
+	# if reqs.max_diameter is not None and "diameter" in attrs:
+	# 	if attrs["diameter"] > reqs.max_diameter:
+	# 		return False
 
 	# Clearance check
-	if reqs.max_clearance is not None and "height" in attrs:
-		if attrs["height"] > reqs.max_clearance:
-			return False
+	# if reqs.max_height is not None and "height" in attrs:
+	# 	if attrs["height"] > reqs.max_height:
+	# 		return False
 
 	return True
 
@@ -84,8 +82,6 @@ def inferAttributes(reqs: TraversabilityRequirements, attrs: TargetAttributes) -
 	  the token inherits all allowed modes.
 	- If the token already has transportation_mode, the list is narrowed to the
 	  intersection with the region's allowed modes.
-	- Numeric constraints (diameter, height) are not inferred — only an exact
-	  known value could satisfy a max/min constraint.
 	"""
 	if reqs is None:
 		return TargetAttributes(**attrs)  # type: ignore[misc]
