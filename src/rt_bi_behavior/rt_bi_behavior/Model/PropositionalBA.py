@@ -293,6 +293,13 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 
 	def __tokensReportForDot(self) -> dict[str, list[dict[str, str]]]:
 		d: dict[str, list[dict]] = {}
+		visibleIds = [
+			t["id"]
+			for state in self.states
+			if len(self.states[state]["tokens"]) <= self.DOT_RENDER_MAX_TOKENS
+			for t in self.states[state]["tokens"]
+		]
+		fetchedAttrs = self.__fetchTokenAttributes(visibleIds) if visibleIds else {}
 		for state in self.states:
 			if len(self.states[state]["tokens"]) > self.DOT_RENDER_MAX_TOKENS:
 				d[state] = [{
@@ -305,6 +312,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					d[state].append({
 						"id": t["id"],
 						"iGraphNode": repr(t["path"][-1]),
+						"attributes": repr(fetchedAttrs.get(t["id"], {})),
 					})
 		return d
 
