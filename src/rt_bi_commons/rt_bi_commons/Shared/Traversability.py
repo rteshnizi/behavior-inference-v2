@@ -35,9 +35,9 @@ class TargetAttributes(TypedDict, total=False):
 	"""
 	transportation_mode: list[str]
 	"""Set of possible transportation modes for this hypothesis."""
-	diameter: str
+	diameter_bound: str
 	"""Physical diameter of the target in categories. e.g., narrow, medium, wide."""
-	height: str
+	height_bound: str
 	"""Physical height of the target in categories. e.g., low, medium, high."""
 
 

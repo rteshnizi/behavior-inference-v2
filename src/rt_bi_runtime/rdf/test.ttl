@@ -10,7 +10,10 @@
 @prefix t: <https://rezateshnizi.com/env/ts#> .
 @prefix interval: <https://rezateshnizi.com/env/intervals#> .
 @prefix material: <https://rezateshnizi.com/env/materials#> .
+@prefix aggregation: <https://rezateshnizi.com/env/aggregations#> .
 @prefix transportation: <https://rezateshnizi.com/env/transportations#> .
+@prefix diameter: <https://rezateshnizi.com/env/diameters#> .
+@prefix height: <https://rezateshnizi.com/env/heights#> .
 @prefix traversability: <https://rezateshnizi.com/env/traversability_reqs#> .
 @prefix target: <https://rezateshnizi.com/env/targets#> .
 @prefix age_group: <https://rezateshnizi.com/env/age_groups#> .
@@ -84,12 +87,18 @@ transportation:walking a class:Transportation ; property:name "walking" .
 transportation:swimming a class:Transportation ; property:name "swimming" .
 transportation:vehicle a class:Transportation ; property:name "vehicle" .
 transportation:bicycle a class:Transportation ; property:name "bicycle" .
+diameter:narrow a class:Diameter ; property:name "narrow" ; property:rank 1 .
+diameter:medium a class:Diameter ; property:name "medium" ; property:rank 2 .
+diameter:wide a class:Diameter ; property:name "wide" ; property:rank 3 .
+height:short a class:Height ; property:name "short" ; property:rank 1 .
+height:medium a class:Height ; property:name "medium" ; property:rank 2 .
+height:tall a class:Height ; property:name "tall" ; property:rank 3 .
 # endregion Target Property Definitions
 
 # region Traversability Requirements
 traversability:bridge a class:TraversabilityReq ;
 	property:transportation_req transportation:walking ;
-	property:max_diameter 3.0 .
+	property:max_diameter diameter:medium .
 # endregion Traversability Requirements
 
 # region Space-Time Sets

@@ -2,12 +2,32 @@ from typing import TypedDict
 
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Shared.Traversability import TargetAttributes
+from rt_bi_commons.Utils import Ros
+from rt_bi_commons.Utils.Msgs import Msgs
 
 
 class Token(TypedDict):
 	id: str
+	parentId: str
 	path: list[NodeId]
 	attributes: TargetAttributes
+
+def tokenToMsg(token: Token) -> Msgs.RtBi.Token:
+	tokenMsg = Msgs.RtBi.Token(id=token["id"], parent_id=token["parentId"])
+	if token["attributes"]:
+		for key, val in token["attributes"].items():
+			if key == "transportation_mode":
+				for mode in val: # pyright: ignore[reportGeneralTypeIssues]
+					pred = Msgs.RtBi.Predicate(name="transportation_mode", value=mode)
+					Ros.AppendMessage(tokenMsg.attributes, pred)
+			elif isinstance(val, float):
+				pred = Msgs.RtBi.Predicate(name=key, value=str(val))
+				Ros.AppendMessage(tokenMsg.attributes, pred)
+			elif isinstance(val, str):
+				pred = Msgs.RtBi.Predicate(name=key, value=val)
+				Ros.AppendMessage(tokenMsg.attributes, pred)
+	return tokenMsg
+
 
 class TokenWithoutHistory(TypedDict):
 	id: str

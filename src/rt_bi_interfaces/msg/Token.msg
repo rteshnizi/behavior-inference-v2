@@ -1,5 +1,7 @@
 # Unique string id
 string id
+# parent id, if any
+string parent_id
 
 # The timestamp associated with the update.
 # Two-integer timestamp that is expressed as:

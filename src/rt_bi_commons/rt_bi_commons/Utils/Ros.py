@@ -13,6 +13,7 @@ from rclpy.clock import Time
 from rclpy.impl.rcutils_logger import RcutilsLogger
 from rclpy.logging import LoggingSeverity
 from rclpy.node import Client, Node, Publisher, Service, Subscription, Timer
+from rclpy.qos import QoSProfile, QoSHistoryPolicy
 
 __Topic = TypeVar("__Topic")
 
@@ -113,7 +114,7 @@ def CreatePublisher(node: Node, topic: type[__Topic], topicName: str, callbackFu
 	-------
 	`Tuple[Publisher, Union[Timer, None]]`
 	"""
-	publisher = node.create_publisher(topic, topicName, 10)
+	publisher = node.create_publisher(topic, topicName, QoSProfile(depth=0, history=QoSHistoryPolicy.KEEP_ALL))
 	timer = None if isnan(intervalSecs) else node.create_timer(intervalSecs, callbackFunc)
 	try:
 		freq = f" @ {(1 / intervalSecs):.2f}Hz"
@@ -141,7 +142,7 @@ def CreateSubscriber(node: Node, topic: type[__Topic], topicName: str, callbackF
 	-------
 	`Subscription`
 	"""
-	subscription = node.create_subscription(topic, topicName, callbackFunc, 10)
+	subscription = node.create_subscription(topic, topicName, callbackFunc, QoSProfile(depth=0, history=QoSHistoryPolicy.KEEP_ALL))
 	node.get_logger().debug(f"{node.get_fully_qualified_name()} subscribed to \"{topicName}\"")
 	return subscription
 

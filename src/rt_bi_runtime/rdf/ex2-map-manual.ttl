@@ -10,6 +10,7 @@
 @prefix t: <https://rezateshnizi.com/env/ts#> .
 @prefix interval: <https://rezateshnizi.com/env/intervals#> .
 @prefix material: <https://rezateshnizi.com/env/materials#> .
+@prefix aggregation: <https://rezateshnizi.com/env/aggregations#> .
 @prefix transportation: <https://rezateshnizi.com/env/transportations#> .
 @prefix diameter: <https://rezateshnizi.com/env/diameters#> .
 @prefix height: <https://rezateshnizi.com/env/heights#> .
@@ -347,12 +348,12 @@ transportation:walking a class:Transportation ; property:name "walking" .
 transportation:swimming a class:Transportation ; property:name "swimming" .
 transportation:vehicle a class:Transportation ; property:name "vehicle" .
 transportation:bicycle a class:Transportation ; property:name "bicycle" .
-diameter:narrow a class:Diameter ; property:name "narrow" .
-diameter:medium a class:Diameter ; property:name "medium" .
-diameter:wide a class:Diameter ; property:name "wide" .
-height:short a class:Height ; property:name "short" .
-height:medium a class:Height ; property:name "medium" .
-height:tall a class:Height ; property:name "tall" .
+diameter:narrow a class:Diameter ; property:name "narrow" ; property:rank 1 .
+diameter:medium a class:Diameter ; property:name "medium" ; property:rank 2 .
+diameter:wide a class:Diameter ; property:name "wide" ; property:rank 3 .
+height:short a class:Height ; property:name "short" ; property:rank 1 .
+height:medium a class:Height ; property:name "medium" ; property:rank 2 .
+height:tall a class:Height ; property:name "tall" ; property:rank 3 .
 # endregion Target Property Definitions
 
 # region Traversability Requirements
@@ -530,4 +531,21 @@ set:a_7 a class:SpaceTime ;
 	property:traversability_req traversability:unrestricted .
 # endregion Space-Time Sets
 
-# Targets will be inserted at runtime
+# region Targets
+target:t1 a class:Target ;
+	property:name "Target 1" .
+
+target:t2 a class:Target ;
+	property:derived_from target:t1 ;
+	property:diameter_bound diameter:medium ;
+	property:transportation_mode transportation:walking .
+
+target:t3 a class:Target ;
+	property:derived_from target:t2 ;
+	property:diameter_bound diameter:narrow ;
+	property:transportation_mode transportation:vehicle .
+
+target:t4 a class:Target ;
+	property:derived_from target:t2 ;
+	property:diameter_bound diameter:wide .
+# endregion Targets

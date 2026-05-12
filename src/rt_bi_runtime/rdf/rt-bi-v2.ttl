@@ -11,6 +11,7 @@
 
 @prefix class: <https://rezateshnizi.com/rt-bi-v2/class#> .
 @prefix property: <https://rezateshnizi.com/rt-bi-v2/property#> .
+@prefix aggregation: <https://rezateshnizi.com/env/aggregations#> .
 
 # region [CLASSES]
 class:Coordinate a rdfs:Class .
@@ -24,14 +25,14 @@ class:PtSeq a rdfs:Class ;
 class:Polygon a rdfs:Class .
 class:Subject a rdfs:Class .
 class:Time a rdfs:Class ;
-rdfs:subClassOf class:Subject .
+	rdfs:subClassOf class:Subject .
 class:Interval a rdfs:Class ;
 	rdfs:subClassOf class:Subject .
 class:SpaceTime a rdfs:Class ;
 	rdfs:subClassOf class:Subject ;
 	rdfs:comment "The class of Regular Space-Time Set specifications." .
 class:Target a rdfs:Class ;
-	rdfs:subClassOf class:SpaceTime ;
+	rdfs:subClassOf class:Subject ;
 	rdfs:comment "The class of target specifications. This is used to specify target attributes." .
 class:Material a rdfs:Class ;
 	rdfs:subClassOf class:Subject ;
@@ -48,10 +49,17 @@ class:Height a rdfs:Class ;
 # SPACE-TIME SPEC
 class:TraversabilityReq a rdfs:Class ;
 	rdfs:comment "The class of traversal constraint specifications." .
+# AGGREGATION RULES
+class:AggregationOperator a rdfs:Class ;
+	rdfs:comment "An operator that determines how a property's values are combined over a derived_from* chain." .
 # endregion [CLASSES]
 
 # endregion [SPACE-TIME PROPS]
 # Transportation requirements
+property:material a rdf:Property ;
+	rdfs:domain class:SpaceTime ;
+	rdfs:range class:Material ;
+	rdfs:comment "The physical material of a space-time set." .
 property:transportation_req a rdf:Property ;
 	rdfs:domain class:TraversabilityReq ;
 	rdfs:range class:Transportation ;
@@ -66,6 +74,22 @@ property:max_height a rdf:Property ;
 	rdfs:range class:Height ;
 	rdfs:comment "Maximum height requirement." .
 # endregion [SPACE-TIME PROPS]
+
+# region [AGGREGATION RULES]
+property:aggregation_operator a rdf:Property ;
+	rdfs:domain rdf:Property ;
+	rdfs:range class:AggregationOperator .
+aggregation:union a class:AggregationOperator ;
+	rdfs:label "union" .
+aggregation:minimum a class:AggregationOperator ;
+	rdfs:label "minimum" .
+aggregation:local_only a class:AggregationOperator ;
+	rdfs:label "local-only" .
+property:rank a rdf:Property ;
+	rdfs:domain rdfs:Resource ;
+	rdfs:range xsd:integer ;
+	rdfs:comment "Tells the aggregation rule the order in max/min rules".
+# endregion [AGGREGATION RULES]
 
 # region [TARGET SPEC]
 class:AgeGroup a rdfs:Class ;
@@ -155,17 +179,20 @@ property:channel a rdf:Property ;
 # endregion [SPACE-TIME PROPS]
 
 # region [TARGET PROPS]
-property:diameter a rdf:Property ;
+property:diameter_bound a rdf:Property ;
 	rdfs:domain class:Target ;
 	rdfs:range class:Diameter ;
+	property:aggregation_operator aggregation:minimum ;
 	rdfs:comment "The target's diameter/width in meters." .
-property:height a rdf:Property ;
+property:height_bound a rdf:Property ;
 	rdfs:domain class:Target ;
 	rdfs:range class:Height ;
+	property:aggregation_operator aggregation:minimum ;
 	rdfs:comment "The target's height in meters" .
 property:transportation_mode a rdf:Property ;
 	rdfs:domain class:Target ;
 	rdfs:range class:Transportation ;
+	property:aggregation_operator aggregation:union ;
 	rdfs:comment "The range of this property is a Transportation specification." .
 property:age_group a rdf:Property ;
 	rdfs:domain class:Target ;

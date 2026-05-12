@@ -1,15 +1,17 @@
-from json import loads
+from json import loads, dumps
 
 from ament_index_python.packages import get_package_share_directory
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.parameter import Parameter
+import threading
 
 from rt_bi_behavior import package_name
 from rt_bi_behavior.Model.BehaviorIGraph import BehaviorIGraph
-# from rt_bi_behavior.Model.BehaviorAutomaton import BehaviorAutomaton
 from rt_bi_behavior.Model.PropositionalBA import PropositionalBA
 from rt_bi_commons.Base.ColdStartableNode import ColdStartable, ColdStartPayload
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Shared.NodeId import NodeId
+from rt_bi_commons.Shared.Traversability import TargetAttributes
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.RtBiInterfaces import RtBiInterfaces
@@ -34,6 +36,13 @@ class BaNode(ColdStartable):
 		self.__transitions: dict[str, dict[str, str]] = {}
 		self.__start: str = ""
 		self.__accepting: list[str] = []
+		self.__tokensCbGroup = ReentrantCallbackGroup()
+		self.__tokensClient = self.create_client(
+			Msgs.RtBiSrv.Tokens,
+			RtBiInterfaces.ServiceNames.RT_BI_RUNTIME_DD_RDF_TARGETS.value,
+			callback_group=self.__tokensCbGroup,
+		)
+		Ros.WaitForServiceToStart(self, self.__tokensClient)
 		self.parseParameters()
 		self.__tokenPublisher = RtBiInterfaces.createTokenPublisher(self)
 		self.__ba = PropositionalBA(
@@ -46,6 +55,7 @@ class BaNode(ColdStartable):
 			self.__grammarDir,
 			self.__grammarFile,
 			self.__tokenPublisher,
+			self.__fetchTokenAttributes,
 		)
 		self.waitForColdStartPermission()
 		RtBiInterfaces.subscribeToIGraph(self, self.__onEvent)
@@ -122,8 +132,54 @@ class BaNode(ColdStartable):
 		if not self.shouldRender: return
 		self.__ba.render()
 
+	__TARGET_IRI_PREFIX = "https://rezateshnizi.com/env/targets#"
+	__TARGET_ATTRIBUTES = ["diameter_bound", "height_bound", "transportation_mode"]
+
+	def __fetchTokenAttributes(self, tokenIds: list[str]) -> dict[str, TargetAttributes]:
+		if not tokenIds:
+			return {}
+		req = Msgs.RtBiSrv.Tokens.Request()
+		req.json_payload = dumps({
+			"ids": [f"{self.__TARGET_IRI_PREFIX}{tid}" for tid in tokenIds],
+			"attributes": self.__TARGET_ATTRIBUTES,
+		})
+		result: dict[str, TargetAttributes] = {}
+		def onResponse(_req: Msgs.RtBiSrv.Tokens.Request, res: Msgs.RtBiSrv.Tokens.Response) -> Msgs.RtBiSrv.Tokens.Response:
+			Ros.Log("Received response for token attributes request.", res.tokens)
+			for tokenMsg in res.tokens:
+				shortId = tokenMsg.id.split("#")[-1] if "#" in tokenMsg.id else tokenMsg.id
+				attrs = TargetAttributes()
+				for pred in tokenMsg.attributes:
+					val = pred.value.split("#")[-1] if "#" in pred.value else pred.value
+					if not val:
+						continue
+					if pred.name == "transportation_mode":
+						if "transportation_mode" not in attrs:
+							attrs["transportation_mode"] = []
+						attrs["transportation_mode"].append(val)
+					elif pred.name in ["diameter_bound", "height_bound"]:
+						attrs[pred.name] = val
+				result[shortId] = attrs
+			return res
+		future = self.__tokensClient.call_async(req)
+		event = threading.Event()
+		future.add_done_callback(lambda _: event.set())
+		event.wait()
+		onResponse(req, future.result()) # pyright: ignore[reportArgumentType]
+		return result
+
 def main(args=None) -> None:
-	return BaNode.Main(args)
+	import rclpy
+	from rclpy.executors import MultiThreadedExecutor
+	rclpy.init(args=args)
+	node = BaNode()
+	executor = MultiThreadedExecutor()
+	executor.add_node(node)
+	try:
+		executor.spin()
+	except KeyboardInterrupt:
+		pass
+	node.destroy_node()
 
 if __name__ == "__main__":
 	main()

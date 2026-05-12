@@ -1,6 +1,7 @@
 from enum import Enum
 from math import nan
 
+from rclpy.callback_groups import CallbackGroup
 from rclpy.node import Client, Publisher, Service, Timer
 from typing_extensions import Callable, NamedTuple, deprecated
 
@@ -45,6 +46,7 @@ class RtBiInterfaces:
 	class ServiceNames(Enum):
 		RT_BI_EVENTIFIER_EVALUATE = "/__rt_bi_eventifier/eval"
 		RT_BI_RUNTIME_DD_RDF = "/__rt_bi_runtime/dd_rdf"
+		RT_BI_RUNTIME_DD_RDF_TARGETS = "/__rt_bi_runtime/dd_rdf/targets"
 
 	@staticmethod
 	def createSpacePublisher(node: RtBiNode, topic: TopicNames, callbackFunc: Callable = lambda: None, intervalSecs: float = nan) -> tuple[Publisher, Timer | None]:
@@ -123,6 +125,17 @@ class RtBiInterfaces:
 	def createSpaceTimeClient(node: RtBiNode) -> Client:
 		svcName = f"{RtBiInterfaces.ServiceNames.RT_BI_RUNTIME_DD_RDF.value}/space_time"
 		return Ros.CreateClient(node, Msgs.RtBiSrv.SpaceTime, svcName)
+
+	@staticmethod
+	def createTargetsService(node: RtBiNode, callbackFunc: Callable[[Msgs.RtBiSrv.Tokens.Request, Msgs.RtBiSrv.Tokens.Response], Msgs.RtBiSrv.Tokens.Response]) -> Service:
+		svcName = RtBiInterfaces.ServiceNames.RT_BI_RUNTIME_DD_RDF_TARGETS.value
+		svc = Ros.CreateService(node, Msgs.RtBiSrv.Tokens, svcName, callbackFunc)
+		return svc
+
+	@staticmethod
+	def createTargetsClient(node: RtBiNode) -> Client:
+		svcName = RtBiInterfaces.ServiceNames.RT_BI_RUNTIME_DD_RDF_TARGETS.value
+		return Ros.CreateClient(node, Msgs.RtBiSrv.Tokens, svcName)
 
 	@staticmethod
 	def createColdStartPublisher(node: RtBiNode) -> Publisher:

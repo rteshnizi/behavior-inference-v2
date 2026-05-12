@@ -1,0 +1,6 @@
+PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
+
+SELECT ?prop ?op
+WHERE {
+	?prop property:aggregation_operator ?op .
+}

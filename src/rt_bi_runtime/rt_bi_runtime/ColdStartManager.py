@@ -11,6 +11,7 @@ class ColdStartManager(RtBiNode):
 		super().__init__(**newKw)
 		self.__awaitingColdStart: list[str] = [
 			# The order in this list is significant
+			"/rt_bi_runtime/dd_rdf_1",
 			"/rt_bi_behavior/ba1",
 			"/rt_bi_emulator/dynamic_map",
 			"/rt_bi_eventifier/eventifier",
@@ -27,7 +28,9 @@ class ColdStartManager(RtBiNode):
 			topic = RtBiInterfaces.TopicNames.RT_BI_RUNTIME_COLD_START.value
 			Ros.WaitForSubscriber(self, topic, nodeName)
 			self.log(f"Sending cold start to node {nodeName}.")
-			if nodeName.startswith(RtBiInterfaces.BA_NODE_PREFIX):
+			if nodeName.startswith("/rt_bi_runtime/dd_rdf"):
+				payload = ColdStartPayload({})
+			elif nodeName.startswith(RtBiInterfaces.BA_NODE_PREFIX):
 				payload = ColdStartPayload({})
 			elif nodeName.startswith(RtBiInterfaces.KNOWN_REGION_NODE_PREFIX):
 				# TODO: fetch predicates
@@ -53,7 +56,9 @@ class ColdStartManager(RtBiNode):
 			self.log(msg.json_payload)
 			if not payload.done: return
 			self.log(f"Cold start done for node {msg.node_name}.")
-			if msg.node_name.startswith(RtBiInterfaces.BA_NODE_PREFIX):
+			if msg.node_name.startswith("/rt_bi_runtime/dd_rdf"):
+				pass # Operator-cache bootstrap is self-contained; no data to harvest.
+			elif msg.node_name.startswith(RtBiInterfaces.BA_NODE_PREFIX):
 				self.__predicates |= payload.predicates
 			elif msg.node_name.startswith(RtBiInterfaces.KNOWN_REGION_NODE_PREFIX):
 				pass # TODO: assign predicates

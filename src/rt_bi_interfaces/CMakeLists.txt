@@ -29,6 +29,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   # Services
   "srv/DataReference.srv"
   "srv/SpaceTime.srv"
+  "srv/Tokens.srv"
   DEPENDENCIES builtin_interfaces
   DEPENDENCIES geometry_msgs
   DEPENDENCIES std_msgs

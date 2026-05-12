@@ -140,7 +140,8 @@ class FusekiInterface:
 		if helper.boolVarValue(i, "temporal"):
 			addTo.append("temporal")
 			msg.set_type = Msgs.RtBi.RegularSet.TEMPORAL
-		if len(addTo) != 1: raise RuntimeError(f"Regular set index {i} is {addTo}. A set must belong to exactly one group.")
+		if len(addTo) != 1:
+			raise RuntimeError(f"Regular set index {i} is {addTo}. A set must belong to exactly one group. Data: {repr(helper[i])}")
 		return (addTo[0], msg)
 
 	def __sendQuery(self, query: str) -> SparqlResultHelper:
@@ -148,11 +149,46 @@ class FusekiInterface:
 		response = requests.post(self.__SPARQL_URL, data={ "query": query })
 		try:
 			parsedResponse = SparqlResultHelper(response)
-			Ros.Log(f"Response:\n{parsedResponse}")
+			Ros.Log(f"SPARQL Response:\n{parsedResponse}")
 			return parsedResponse
 		except Exception as e:
 			Ros.Logger().error(f"SPARQL request failed with the following message: {repr(e)}")
 			raise e
+
+	__VALUE_IRI_PREFIXES: dict[str, str] = {
+		"transportation_mode": "https://rezateshnizi.com/env/transportations#",
+		"diameter_bound": "https://rezateshnizi.com/env/diameters#",
+		"height_bound": "https://rezateshnizi.com/env/heights#",
+	}
+	__TARGET_PREFIX = "https://rezateshnizi.com/env/targets#"
+	__PROPERTY_PREFIX = "https://rezateshnizi.com/rt-bi-v2/property#"
+	__CLASS_PREFIX = "https://rezateshnizi.com/rt-bi-v2/class#"
+
+	def __sendUpdate(self, update: str) -> None:
+		Ros.Log(f"Sending Update to Fuseki", [update])
+		response = requests.post(self.__SPARQL_URL, data={ "update": update })
+		response.raise_for_status()
+
+	def insertToken(self, tokenId: str, parentId: str, attributes: list[tuple[str, str]]) -> None:
+		"""Inserts a token as a class:Target individual into the knowledge base via INSERT DATA."""
+		tokenIri = f"<{self.__TARGET_PREFIX}{tokenId}>"
+		triples = [f"\t{tokenIri} a <{self.__CLASS_PREFIX}Target> ."]
+		if parentId:
+			parentIri = f"<{self.__TARGET_PREFIX}{parentId}>"
+			triples.append(f"\t{tokenIri} <{self.__PROPERTY_PREFIX}derived_from> {parentIri} .")
+		for attrName, attrValue in attributes:
+			if not attrValue:
+				continue
+			propIri = f"<{self.__PROPERTY_PREFIX}{attrName}>"
+			if attrName in self.__VALUE_IRI_PREFIXES:
+				valueIri = f"<{self.__VALUE_IRI_PREFIXES[attrName]}{attrValue}>"
+				triples.append(f"\t{tokenIri} {propIri} {valueIri} .")
+			else:
+				escaped = attrValue.replace(chr(92), chr(92)*2).replace('"', chr(92)+'"')
+				triples.append(f"\t{tokenIri} {propIri} \"{escaped}\" .")
+		triplesStr = "\n".join(triples)
+		sparql = f"INSERT DATA {{\n{triplesStr}\n}}"
+		self.__sendUpdate(sparql)
 
 	def fetchGeometryById(self, query: str, msgsToUpdate: dict[str, Msgs.RtBi.RegularSet]) -> dict[str, Msgs.RtBi.RegularSet]:
 		resultHelper = self.__sendQuery(query)
@@ -174,6 +210,34 @@ class FusekiInterface:
 			Ros.ConcatMessageArray(msg.intervals, intervals)
 		return msgsToUpdate
 
+	def fetchTargets(self, query: str) -> dict[str, dict[str, str]]:
+		"""Returns a mapping from target IRI to its effective attribute values.
+		Outer key = the target IRI bound to ?target. Inner dict keys are the other
+		variable names projected by the assembled query (e.g., \"diameter_bound\",
+		\"transportation_mode\"); values are the SPARQL bindings, with empty strings
+		for absent bindings (signaling \"unrestricted\" downstream)."""
+		resultHelper = self.__sendQuery(query)
+		result: dict[str, dict[str, str]] = {}
+		for i in range(len(resultHelper)):
+			targetIri = resultHelper.strVarValue(i, "target")
+			result[targetIri] = {
+				var: resultHelper.strVarValue(i, var)
+				for var in resultHelper.variables
+				if var != "target"
+			}
+		return result
+
+	def fetchAggregationOperators(self, query: str) -> dict[str, str]:
+		"""Returns a mapping from property IRI to operator IRI local-part (e.g., \"minimum\", \"union\").
+		The local-part doubles as the operator template filename basename."""
+		resultHelper = self.__sendQuery(query)
+		mapping: dict[str, str] = {}
+		for i in range(len(resultHelper)):
+			propIri = resultHelper.strVarValue(i, "prop")
+			opIri = resultHelper.strVarValue(i, "op")
+			mapping[propIri] = opIri.split("#")[-1]
+		return mapping
+
 	def fetchSets(self, query: str) -> dict["FusekiInterface.SetTypes", dict[str, Msgs.RtBi.RegularSet]]:
 		resultHelper = self.__sendQuery(query)
 		stamp = Ros.Now(self.__node).to_msg()
@@ -194,8 +258,8 @@ class FusekiInterface:
 			msg.predicates = self.__parsePredicates(resultHelper, i)
 			# Collect traversability — transportation_req may span multiple rows
 			transportModes: list[str] = []
-			msg.traversability_max_diameter = -1.0
-			msg.traversability_max_height = -1.0
+			msg.traversability_max_diameter = ""
+			msg.traversability_max_height = ""
 			while i < len(resultHelper) and resultHelper.strVarValue(i, "regularSetId") == regularSetId:
 				transport = resultHelper.strVarValue(i, "allowedTransport")
 				if transport:

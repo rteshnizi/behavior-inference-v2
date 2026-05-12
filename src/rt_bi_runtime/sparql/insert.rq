@@ -16,5 +16,5 @@ PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
 PREFIX y:        <https://rezateshnizi.com/env/ys#>
 
 INSERT DATA {
-	# TARGET_TRIPLES ############################
+	# INSERT VALUES #############################
 }

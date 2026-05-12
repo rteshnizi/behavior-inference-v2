@@ -1,45 +1,74 @@
-PREFIX class:    <https://rezateshnizi.com/rt-bi-v2/class#>
-PREFIX dc:       <http://purl.org/dc/elements/1.1/>
-PREFIX interval: <https://rezateshnizi.com/env/intervals#>
-PREFIX material: <https://rezateshnizi.com/env/materials#>
-PREFIX owl:      <http://www.w3.org/2002/07/owl#>
-PREFIX polygon:  <https://rezateshnizi.com/env/polys#>
-PREFIX pt:       <https://rezateshnizi.com/env/pts#>
-PREFIX rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX set:      <https://rezateshnizi.com/env/sets#>
-PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
-PREFIX t:        <https://rezateshnizi.com/env/ts#>
-PREFIX x:        <https://rezateshnizi.com/env/xs#>
-PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
-PREFIX y:        <https://rezateshnizi.com/env/ys#>
+# PREFIX class:    <https://rezateshnizi.com/rt-bi-v2/class#>
+# PREFIX dc:       <http://purl.org/dc/elements/1.1/>
+# PREFIX interval: <https://rezateshnizi.com/env/intervals#>
+# PREFIX material: <https://rezateshnizi.com/env/materials#>
+# PREFIX owl:      <http://www.w3.org/2002/07/owl#>
+# PREFIX polygon:  <https://rezateshnizi.com/env/polys#>
+# PREFIX pt:       <https://rezateshnizi.com/env/pts#>
+# PREFIX rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#>
+# PREFIX set:      <https://rezateshnizi.com/env/sets#>
+# PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
+# PREFIX t:        <https://rezateshnizi.com/env/ts#>
+# PREFIX x:        <https://rezateshnizi.com/env/xs#>
+# PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
+# PREFIX y:        <https://rezateshnizi.com/env/ys#>
 
-SELECT ?regularSetId
-	?polygonId ?vertInd ?x ?y
-	?intervalId ?min ?max ?include_min ?include_max
-	?channelId
-	# SELECT ####################################
+# SELECT ?regularSetId
+# 	?polygonId ?vertInd ?x ?y
+# 	?intervalId ?min ?max ?include_min ?include_max
+# 	?channelId
+# 	# SELECT ####################################
+# WHERE {
+# 	?regularSetId a/rdfs:subClassOf* class:SpaceTime .
+# 	OPTIONAL { ?regularSetId property:geometry ?polygonId .
+# 		?polygonId property:vertices ?vertexSeq .
+# 		?vertexSeq ?vertInd ?vertex .
+# 		?vertex
+# 			property:coord/property:x_val ?x ;
+# 			property:coord/property:y_val ?y .
+# 	}
+# 	OPTIONAL { ?regularSetId property:interval ?intervalId .
+# 		?intervalId
+# 			property:min/property:t_val ?min ;
+# 			property:max/property:t_val ?max ;
+# 			property:include_min ?include_min ;
+# 			property:include_max ?include_max .
+# 	}
+# 	OPTIONAL { ?regularSetId property:channel ?channelId . }
+# 	# WHERE #####################################
+# 	# BIND ######################################
+# }
+# ORDER BY ?regularSetId
+# 	?polygonId ?vertInd ?x ?y
+# 	?intervalId ?min ?max
+# 	# ORDER #####################################
+
+PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
+PREFIX target:   <https://rezateshnizi.com/env/targets#>
+
+SELECT ?target
+	?diameter_bound (GROUP_CONCAT(DISTINCT ?transportation_mode_name; separator=", ") AS ?transportation_mode)
 WHERE {
-	?regularSetId a/rdfs:subClassOf* class:SpaceTime .
-	OPTIONAL { ?regularSetId property:geometry ?polygonId .
-		?polygonId property:vertices ?vertexSeq .
-		?vertexSeq ?vertInd ?vertex .
-		?vertex
-			property:coord/property:x_val ?x ;
-			property:coord/property:y_val ?y .
+	VALUES ?target {
+		target:t3
+		target:t4
 	}
-	OPTIONAL { ?regularSetId property:interval ?intervalId .
-		?intervalId
-			property:min/property:t_val ?min ;
-			property:max/property:t_val ?max ;
-			property:include_min ?include_min ;
-			property:include_max ?include_max .
+	{
+		SELECT ?target (MIN(?rank_diameter_bound) AS ?minRank_diameter_bound) WHERE {
+			?target property:derived_from* ?anc_diameter_bound .
+			?anc_diameter_bound property:diameter_bound ?val_diameter_bound .
+			?val_diameter_bound property:rank ?rank_diameter_bound .
+		} GROUP BY ?target
 	}
-	OPTIONAL { ?regularSetId property:channel ?channelId . }
-	# WHERE #####################################
-	# BIND ######################################
+	?target property:derived_from* ?anc2_diameter_bound .
+	?anc2_diameter_bound property:diameter_bound ?eff_diameter_bound .
+	?eff_diameter_bound property:rank ?minRank_diameter_bound ;
+						property:name ?diameter_bound .
+
+	?target property:derived_from* ?anc_transportation_mode .
+	?anc_transportation_mode property:transportation_mode ?val_transportation_mode .
+	?val_transportation_mode property:name ?transportation_mode_name .
 }
-ORDER BY ?regularSetId
-	?polygonId ?vertInd ?x ?y
-	?intervalId ?min ?max
-	# ORDER #####################################
+GROUP BY ?target
+	?diameter_bound

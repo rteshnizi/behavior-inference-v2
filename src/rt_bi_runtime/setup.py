@@ -15,7 +15,8 @@ setup(
 		(os.path.join("share", packageName, "launch"), glob("launch/*")),
 		(os.path.join("share", packageName, "config"), glob("config/*")),
 		(os.path.join("share", packageName, "rdf"), glob("rdf/*")),
-		(os.path.join("share", packageName, "sparql"), glob("sparql/*")),
+		(os.path.join("share", packageName, "sparql"), glob("sparql/*.rq")),
+		(os.path.join("share", packageName, "sparql", "operators"), glob("sparql/operators/*.rq")),
 	],
 	install_requires= [
 		"requests~=2.25",
