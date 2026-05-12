@@ -8,14 +8,12 @@ from rt_bi_commons.Utils.Msgs import Msgs
 
 class Token(TypedDict):
 	id: str
-	parentId: str
 	path: list[NodeId]
-	attributes: TargetAttributes
 
-def tokenToMsg(token: Token) -> Msgs.RtBi.Token:
-	tokenMsg = Msgs.RtBi.Token(id=token["id"], parent_id=token["parentId"])
-	if token["attributes"]:
-		for key, val in token["attributes"].items():
+def tokenToMsg(token: Token, parentId: str = "", attributes: TargetAttributes | None = None) -> Msgs.RtBi.Token:
+	tokenMsg = Msgs.RtBi.Token(id=token["id"], parent_id=parentId)
+	if attributes:
+		for key, val in attributes.items():
 			if key == "transportation_mode":
 				for mode in val: # pyright: ignore[reportGeneralTypeIssues]
 					pred = Msgs.RtBi.Predicate(name="transportation_mode", value=mode)

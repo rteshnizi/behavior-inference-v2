@@ -122,13 +122,9 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		return
 
 	def __createToken(self, parent: Token | None, path: list[NodeId], attributes: TargetAttributes | None = None) -> Token:
-		token = Token(
-			id=f"{self.__tokenCounter}",
-			parentId=parent["id"] if parent is not None else "",
-			path=path,
-			attributes=attributes or TargetAttributes(),
-		)
-		tokenMsg = tokenToMsg(token)
+		token = Token(id=f"{self.__tokenCounter}", path=path)
+		parentId = parent["id"] if parent is not None else ""
+		tokenMsg = tokenToMsg(token, parentId=parentId, attributes=attributes)
 		self.__tokenPublisher.publish(tokenMsg)
 		Ros.Log(f"Published token {token['id']}", attributes)
 		self.__tokenCounter += 1
@@ -158,8 +154,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 
 		while len(tokens) > 0:
 			token = tokens.pop()
-			if token["id"] in fetchedAttrs:
-				token["attributes"] = fetchedAttrs[token["id"]]
+			tokenAttrs = fetchedAttrs.get(token["id"], TargetAttributes())
 			visited: set[NodeId] = set()
 			for nId in token["path"]: visited.add(nId)
 			# BFS
@@ -171,22 +166,22 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					f"---> Evaluating Destination {destination} <==> Token {token['id']}",
 					{
 						"Req": iGraph.nodes[destination].get("traversability_reqs"),
-						"Attr": token["attributes"],
+						"Attr": tokenAttrs,
 					},
 					# severity=Ros.LoggingSeverity.ERROR
 				)
 				# Skip hop if token attributes conflict with region requirements
-				if not iGraph.isTraversableBy(destination, token["attributes"]):
+				if not iGraph.isTraversableBy(destination, tokenAttrs):
 					Ros.Log(f"Token {token['id']} cannot traverse to Destination {destination}")
 					continue
 				visited.add(destination)
 				# Narrow token attributes based on region requirements
-				newAttributes = iGraph.updateAttributes(destination, token["attributes"])
+				newAttributes = iGraph.updateAttributes(destination, tokenAttrs)
 				path = self.__extendPath(token["path"], extensions[destination])
 				newToken = self.__createToken(token, path, attributes=newAttributes)
 				Ros.Log(
 					f"Created token {newToken['id']} based on {token['id']}",
-					{"PRV Attr": token["attributes"], "NEW Attr": newToken["attributes"]},
+					{"PRV Attr": tokenAttrs, "NEW Attr": newAttributes},
 					# severity=Ros.LoggingSeverity.ERROR
 				)
 				Ros.Log(
@@ -310,7 +305,6 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					d[state].append({
 						"id": t["id"],
 						"iGraphNode": repr(t["path"][-1]),
-						"attributes": repr(t["attributes"]),
 					})
 		return d
 
