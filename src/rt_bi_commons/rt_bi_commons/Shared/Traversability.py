@@ -71,29 +71,3 @@ def isCompatible(reqs: TraversabilityRequirements, attrs: TargetAttributes) -> b
 	# 		return False
 
 	return True
-
-
-def inferAttributes(reqs: TraversabilityRequirements, attrs: TargetAttributes) -> TargetAttributes:
-	"""
-	Return a copy of attrs enriched/narrowed by traversing a region with reqs.
-
-	- If reqs is None, returns attrs unchanged.
-	- If the token has no transportation_mode and the region constrains it,
-	  the token inherits all allowed modes.
-	- If the token already has transportation_mode, the list is narrowed to the
-	  intersection with the region's allowed modes.
-	"""
-	if reqs is None:
-		return TargetAttributes(**attrs)  # type: ignore[misc]
-
-	result = TargetAttributes(**attrs)  # type: ignore[misc]
-
-	if reqs.transportation_req:
-		allowed = set(reqs.transportation_req)
-		if "transportation_mode" not in result:
-			result["transportation_mode"] = list(allowed)
-		else:
-			narrowed = list(set(result["transportation_mode"]).intersection(allowed))
-			result["transportation_mode"] = narrowed
-
-	return result

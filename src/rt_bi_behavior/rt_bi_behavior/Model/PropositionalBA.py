@@ -175,8 +175,8 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					Ros.Log(f"Token {token['id']} cannot traverse to Destination {destination}")
 					continue
 				visited.add(destination)
-				# Narrow token attributes based on region requirements
-				newAttributes = iGraph.updateAttributes(destination, tokenAttrs)
+				# Assert only this region's raw constraints — the ontology aggregates them
+				newAttributes = iGraph.deltaAttributes(destination)
 				path = self.__extendPath(token["path"], extensions[destination])
 				newToken = self.__createToken(token, path, attributes=newAttributes)
 				Ros.Log(
