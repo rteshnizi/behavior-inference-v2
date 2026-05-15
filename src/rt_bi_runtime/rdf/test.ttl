@@ -12,6 +12,7 @@
 @prefix material: <https://rezateshnizi.com/env/materials#> .
 @prefix aggregation: <https://rezateshnizi.com/env/aggregations#> .
 @prefix transportation: <https://rezateshnizi.com/env/transportations#> .
+@prefix category: <https://rezateshnizi.com/env/categories#> .
 @prefix diameter: <https://rezateshnizi.com/env/diameters#> .
 @prefix height: <https://rezateshnizi.com/env/heights#> .
 @prefix traversability: <https://rezateshnizi.com/env/traversability_reqs#> .
@@ -94,6 +95,21 @@ height:short a class:Height ; property:name "short" ; property:rank 1 .
 height:medium a class:Height ; property:name "medium" ; property:rank 2 .
 height:tall a class:Height ; property:name "tall" ; property:rank 3 .
 # endregion Target Property Definitions
+
+# region Target Categories
+category:human a class:TargetCategory ;
+	property:name "human" ;
+	property:transportation_mode transportation:walking ;
+	property:height_bound height:medium ;
+	property:diameter_bound diameter:narrow.
+
+category:car a class:TargetCategory ;
+	property:name "car" ;
+	property:transportation_mode transportation:vehicle ;
+	property:height_bound height:tall ;
+	property:diameter_bound diameter:wide.
+
+# endregion Target Categories
 
 # region Traversability Requirements
 traversability:bridge a class:TraversabilityReq ;

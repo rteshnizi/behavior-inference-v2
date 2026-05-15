@@ -49,6 +49,8 @@ class:Height a rdfs:Class ;
 # SPACE-TIME SPEC
 class:TraversabilityReq a rdfs:Class ;
 	rdfs:comment "The class of traversal constraint specifications." .
+class:TargetCategory a rdfs:Class ;
+	rdfs:comment "The class of target categories specifying general information about the target." .
 # AGGREGATION RULES
 class:AggregationOperator a rdfs:Class ;
 	rdfs:comment "An operator that determines how a property's values are combined over a derived_from* chain." .
@@ -81,6 +83,8 @@ property:aggregation_operator a rdf:Property ;
 	rdfs:range class:AggregationOperator .
 aggregation:union a class:AggregationOperator ;
 	rdfs:label "union" .
+aggregation:intersection a class:AggregationOperator ;
+	rdfs:label "intersection" .
 aggregation:minimum a class:AggregationOperator ;
 	rdfs:label "minimum" .
 aggregation:local_only a class:AggregationOperator ;
@@ -179,27 +183,28 @@ property:channel a rdf:Property ;
 # endregion [SPACE-TIME PROPS]
 
 # region [TARGET PROPS]
-property:diameter_bound a rdf:Property ;
-	rdfs:domain class:Target ;
-	rdfs:range class:Diameter ;
-	property:aggregation_operator aggregation:minimum ;
-	rdfs:comment "The target's diameter/width in meters." .
-property:height_bound a rdf:Property ;
-	rdfs:domain class:Target ;
-	rdfs:range class:Height ;
-	property:aggregation_operator aggregation:minimum ;
-	rdfs:comment "The target's height in meters" .
-property:transportation_mode a rdf:Property ;
-	rdfs:domain class:Target ;
-	rdfs:range class:Transportation ;
-	property:aggregation_operator aggregation:union ;
-	rdfs:comment "The range of this property is a Transportation specification." .
-property:age_group a rdf:Property ;
-	rdfs:domain class:Target ;
-	rdfs:range class:AgeGroup ;
-	rdfs:comment "The range of this property is an AgeGroup specification." .
 property:derived_from a rdf:Property ;
 	rdfs:domain class:Target ;
 	rdfs:range class:Target ;
 	rdfs:comment "Refinement relation between hypotheses: child is a more specific hypothesis." .
+property:target_category a rdf:Property ;
+	rdfs:domain class:Target ;
+	rdfs:range class:TargetCategory ;
+	rdfs:comment "The target's category" .
+property:diameter_bound a rdf:Property ;
+	rdfs:domain class:TargetCategory ;
+	rdfs:range class:Diameter ;
+	rdfs:comment "The target's diameter/width in meters." .
+property:height_bound a rdf:Property ;
+	rdfs:domain class:TargetCategory ;
+	rdfs:range class:Height ;
+	rdfs:comment "The target's height in meters" .
+property:transportation_mode a rdf:Property ;
+	rdfs:domain class:TargetCategory ;
+	rdfs:range class:Transportation ;
+	rdfs:comment "The range of this property is a Transportation specification." .
+property:age_group a rdf:Property ;
+	rdfs:domain class:TargetCategory ;
+	rdfs:range class:AgeGroup ;
+	rdfs:comment "The range of this property is an AgeGroup specification." .
 # endregion [TARGET PROPS]
