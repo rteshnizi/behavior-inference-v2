@@ -183,6 +183,8 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 
 	def __onTargetsRequest(self, req: Tokens.Request, res: Tokens.Response) -> Tokens.Response:
 		payload = ColdStartPayload(req.json_payload)
+		if "token_iri" in payload:
+			return self.__onTraversableCategoriesRequest(payload, res)
 		attributes: list[str] = list(payload.get("attributes", []))  # property short names, e.g. ["diameter_bound", "transportation_mode"]
 		ids: list[str] = list(payload.get("ids", []))                # full target IRIs, e.g. ["https://rezateshnizi.com/env/targets#t3"]
 		selectFragments: list[str] = []
@@ -211,6 +213,35 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 			for attrName, attrValue in attrDict.items():
 				predicate = Msgs.RtBi.Predicate(name=attrName, value=attrValue)
 				Ros.AppendMessage(tokenMsg.attributes, predicate)
+			Ros.AppendMessage(res.tokens, tokenMsg)
+		return res
+
+	def __onTraversableCategoriesRequest(self, payload: ColdStartPayload, res: Tokens.Response) -> Tokens.Response:
+		tokenIri: str = payload["token_iri"]
+		reqIris: list[str] = list(payload.get("req_iris", []))
+		non_empty_reqs = [r for r in reqIris if r]
+		if non_empty_reqs:
+			sparql = Path(self.__baseDir, self["sparql_dir"][0], "traversable_categories.rq").read_text()
+			sparql = sparql.replace("# TOKEN_IRI #", f"<{tokenIri}>")
+			sparql = sparql.replace("# REQ_IRIS #", " ".join(f"<{r}>" for r in non_empty_reqs))
+			resultsByReq = self.__httpInterface.fetchTraversableCategories(sparql)
+			for reqIri, catIris in resultsByReq.items():
+				tokenMsg = Msgs.RtBi.Token()
+				tokenMsg.id = reqIri
+				tokenMsg.stamp = Ros.Now(self).to_msg()
+				for catIri in catIris:
+					Ros.AppendMessage(tokenMsg.attributes, Msgs.RtBi.Predicate(name="target_category", value=catIri))
+				Ros.AppendMessage(res.tokens, tokenMsg)
+		if "" in reqIris:
+			# dot renderer sentinel: return all current categories for this token
+			sparql = Path(self.__baseDir, self["sparql_dir"][0], "token_categories.rq").read_text()
+			sparql = sparql.replace("# TOKEN_IRI #", f"<{tokenIri}>")
+			allCats = self.__httpInterface.fetchTokenCategories(sparql)
+			tokenMsg = Msgs.RtBi.Token()
+			tokenMsg.id = ""
+			tokenMsg.stamp = Ros.Now(self).to_msg()
+			for catIri in allCats:
+				Ros.AppendMessage(tokenMsg.attributes, Msgs.RtBi.Predicate(name="target_category", value=catIri))
 			Ros.AppendMessage(res.tokens, tokenMsg)
 		return res
 

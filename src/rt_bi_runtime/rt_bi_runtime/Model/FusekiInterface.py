@@ -238,6 +238,25 @@ class FusekiInterface:
 			mapping[propIri] = opIri.split("#")[-1]
 		return mapping
 
+	def fetchTraversableCategories(self, query: str) -> dict[str, list[str]]:
+		"""Returns a mapping from TraversabilityReq IRI to the list of category IRIs that survive it.
+		The query is the filled traversable_categories.rq template."""
+		resultHelper = self.__sendQuery(query)
+		result: dict[str, list[str]] = {}
+		for i in range(len(resultHelper)):
+			reqIri = resultHelper.strVarValue(i, "req")
+			catIri = resultHelper.strVarValue(i, "category")
+			if reqIri not in result:
+				result[reqIri] = []
+			result[reqIri].append(catIri)
+		return result
+
+	def fetchTokenCategories(self, query: str) -> list[str]:
+		"""Returns the list of target_category IRIs currently assigned to the token.
+		The query is the filled token_categories.rq template."""
+		resultHelper = self.__sendQuery(query)
+		return [resultHelper.strVarValue(i, "category") for i in range(len(resultHelper))]
+
 	def fetchSets(self, query: str) -> dict["FusekiInterface.SetTypes", dict[str, Msgs.RtBi.RegularSet]]:
 		resultHelper = self.__sendQuery(query)
 		stamp = Ros.Now(self.__node).to_msg()

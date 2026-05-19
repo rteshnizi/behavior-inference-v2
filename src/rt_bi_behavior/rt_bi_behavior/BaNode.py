@@ -131,14 +131,12 @@ class BaNode(ColdStartable):
 		if not self.shouldRender: return
 		self.__ba.render()
 
-	__TARGET_IRI_PREFIX = "https://rezateshnizi.com/env/targets#"
-
 	def __fetchTraversableCategories(self, tokenId: str, reqIris: list[str]) -> dict[str, list[str]]:
 		if not reqIris:
 			return {}
 		req = Msgs.RtBiSrv.Tokens.Request()
 		req.json_payload = dumps({
-			"token_iri": f"{self.__TARGET_IRI_PREFIX}{tokenId}",
+			"token_iri": f"target:{tokenId}",
 			"req_iris": reqIris,
 		})
 		result: dict[str, list[str]] = {}
