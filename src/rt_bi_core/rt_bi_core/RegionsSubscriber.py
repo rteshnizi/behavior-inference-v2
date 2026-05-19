@@ -123,6 +123,7 @@ class RegionsSubscriber(RtBiNode, ABC):
 			transportation_req=transport_req,
 			max_diameter=regularSet.traversability_max_diameter,
 			max_height=regularSet.traversability_max_height,
+			iri=regularSet.traversability_req_iri,
 		)
 		return t
 

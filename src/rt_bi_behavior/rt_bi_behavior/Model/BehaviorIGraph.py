@@ -6,7 +6,7 @@ import networkx as nx
 from rt_bi_behavior.Model.Transition import TransitionStatement
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Shared.Predicates import Predicates
-from rt_bi_commons.Shared.Traversability import TargetAttributes, TraversabilityRequirements, isCompatible
+from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.NetworkX import NxUtils
@@ -27,31 +27,9 @@ class BehaviorIGraph(NxUtils.Graph):
 		predicates = self.getContent(node, "predicates")
 		return criterion.evaluate(predicates)
 
-	def isTraversableBy(self, node: NodeId, attrs: TargetAttributes) -> bool:
-		"""Return True if attrs are compatible with the traversability requirements of node."""
-		reqsDict = self.nodes[node].get("traversability_reqs")
-		if reqsDict is None: raise ValueError(f"Node {node} does not have traversability requirements")
-		reqs = TraversabilityRequirements.fromDict(reqsDict)
-		return isCompatible(reqs, attrs)
-
-	def deltaAttributes(self, node: NodeId) -> TargetAttributes:
-		"""Return the region's own constraints as raw token attributes to assert on the new token.
-
-		The BA calls this instead of computing intersections in Python — the ontology's
-		aggregation operators (minimum, intersection) will derive the effective values
-		across the derived_from* chain at query time.
-		"""
-		reqsDict = self.nodes[node].get("traversability_reqs")
-		if reqsDict is None: raise ValueError(f"Node {node} does not have traversability requirements")
-		reqs = TraversabilityRequirements.fromDict(reqsDict)
-		result = TargetAttributes()
-		if reqs.transportation_req:
-			result["transportation_mode"] = list(reqs.transportation_req)
-		if reqs.max_diameter:
-			result["diameter_bound"] = reqs.max_diameter
-		if reqs.max_height:
-			result["height_bound"] = reqs.max_height
-		return result
+	def traversabilityReq(self, node: NodeId) -> TraversabilityRequirements:
+		"""Return the TraversabilityRequirements for this node. `.iri == ""` means unconstrained."""
+		return self.nodes[node].get("traversability_reqs", TraversabilityRequirements())
 
 	def propagate(self, source: NodeId, visited: set[NodeId]) -> dict[NodeId, list[NodeId]]:
 		"""Returns a dictionary from target Id to path"""
@@ -78,9 +56,7 @@ class BehaviorIGraph(NxUtils.Graph):
 		for node in d["nodes"]:
 			node["id"] = NodeId.fromDict(node["id"])
 			node["predicates"] = Predicates(node["predicates"])
-			node["traversability_reqs"] = TraversabilityRequirements.fromDict(node["traversability_reqs"]).asDict()
-			# traversability_reqs is already a plain dict (or None) — keep as-is for
-			# lazy deserialization in isTraversableBy / deltaAttributes
+			node["traversability_reqs"] = TraversabilityRequirements.fromDict(node.get("traversability_reqs", {}))
 		for adj in d["adjacency"]:
 			for edge in adj:
 				edge["id"] = NodeId.fromDict(edge["id"])

@@ -25,6 +25,7 @@ rt_bi_interfaces/TimeInterval[] intervals
 string[] traversability_transport_req
 string traversability_max_diameter    # empty string = unconstrained
 string traversability_max_height      # empty string = unconstrained
+string traversability_req_iri         # empty string = no traversability constraint IRI
 
 ######################### Properties #########################
 # The fully qualified name of the associated ROS node.

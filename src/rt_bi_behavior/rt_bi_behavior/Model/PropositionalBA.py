@@ -10,9 +10,9 @@ from rt_bi_behavior.Model.BehaviorIGraph import BehaviorIGraph
 from rt_bi_behavior.Model.State import State, Token, tokenToMsg
 from rt_bi_behavior.Model.Transition import Transition, TransitionStatement
 from rt_bi_commons.Shared.NodeId import NodeId
-from rt_bi_commons.Shared.Traversability import TargetAttributes
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
+from rt_bi_commons.Utils.NetworkX import NxUtils
 
 
 class PropositionalBehaviorAutomaton(nx.DiGraph):
@@ -28,7 +28,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			transitionGrammarDir: str,
 			grammarFileName: str,
 			tokenPublisher: Ros.Publisher,
-			fetchTokenAttributes: Callable[[list[str]], dict[str, TargetAttributes]],
+			fetchTraversableCategories: Callable[[str, list[str]], dict[str, list[str]]],
 		):
 		super().__init__()
 		self.__dotPublisher: Ros.Publisher | None = None
@@ -43,7 +43,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		self.__grammarFileName: str = grammarFileName
 		self.__initializedTokens = False
 		self.__tokenPublisher = tokenPublisher
-		self.__fetchTokenAttributes = fetchTokenAttributes
+		self.__fetchTraversableCategories = fetchTraversableCategories
 		self.__buildGraph(states, transitions)
 		return
 
@@ -121,12 +121,12 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 				self.__addTransition(src, statementSyntax, dst)
 		return
 
-	def __createToken(self, parent: Token | None, path: list[NodeId], attributes: TargetAttributes | None = None) -> Token:
+	def __createToken(self, parent: Token | None, path: list[NodeId], categories: list[str] | None = None) -> Token:
 		token = Token(id=f"{self.__tokenCounter}", path=path)
 		parentId = parent["id"] if parent is not None else ""
-		tokenMsg = tokenToMsg(token, parentId=parentId, attributes=attributes)
+		tokenMsg = tokenToMsg(token, parentId=parentId, categories=categories)
 		self.__tokenPublisher.publish(tokenMsg)
-		Ros.Log(f"Published token {token['id']}", attributes)
+		Ros.Log(f"Published token {token['id']}", categories)
 		self.__tokenCounter += 1
 		return token
 
@@ -147,49 +147,47 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		statement = self[fromState][toState]["statement"]
 		tokens = self.states[fromState]["tokens"].copy()
 		self.states[fromState]["tokens"] = []
-		# Fetch effective attributes from RDF store
-		tokenIds = [t["id"] for t in tokens]
-		fetchedAttrs = self.__fetchTokenAttributes(tokenIds)
-		Ros.Log(f"Fetched attributes for tokens {[t['id'] for t in tokens]}", fetchedAttrs)
 
 		while len(tokens) > 0:
 			token = tokens.pop()
-			tokenAttrs = fetchedAttrs.get(token["id"], TargetAttributes())
 			visited: set[NodeId] = set()
 			for nId in token["path"]: visited.add(nId)
-			# BFS
+			# BFS one step
 			extensions = iGraph.propagateOneStep(token["path"][-1], visited)
-			if len(extensions) == 0: self.__addToken(fromState, token)
+			if len(extensions) == 0:
+				self.__addToken(fromState, token)
+				continue
+
+			# Collect unique req IRIs across all candidate destinations.
+			# Include "" as a sentinel for unconstrained destinations (returns all categories).
+			reqIris: list[str] = []
+			for destination in extensions:
+				iri = iGraph.traversabilityReq(destination).iri
+				if iri:
+					if iri not in reqIris:
+						reqIris.append(iri)
+				elif "" not in reqIris:
+					reqIris.append("")
+
+			# Single batched SPARQL call: dict[req_iri, list[category_iri]]
+			survivingByReq = self.__fetchTraversableCategories(token["id"], reqIris)
+			Ros.Log(f"Fetched surviving categories for token {token['id']}", survivingByReq)
+
 			for destination in extensions:
 				if destination in visited: continue
+				reqIri = iGraph.traversabilityReq(destination).iri
+				surviving = survivingByReq.get(reqIri, [])
 				Ros.Log(
 					f"---> Evaluating Destination {destination} <==> Token {token['id']}",
-					{
-						"Req": iGraph.nodes[destination].get("traversability_reqs"),
-						"Attr": tokenAttrs,
-					},
-					# severity=Ros.LoggingSeverity.ERROR
+					{"ReqIri": reqIri, "Surviving": surviving},
 				)
-				# Skip hop if token attributes conflict with region requirements
-				if not iGraph.isTraversableBy(destination, tokenAttrs):
+				if reqIri and not surviving:
 					Ros.Log(f"Token {token['id']} cannot traverse to Destination {destination}")
 					continue
 				visited.add(destination)
-				# Assert only this region's raw constraints — the ontology aggregates them
-				newAttributes = iGraph.deltaAttributes(destination)
 				path = self.__extendPath(token["path"], extensions[destination])
-				newToken = self.__createToken(token, path, attributes=newAttributes)
-				Ros.Log(
-					f"Created token {newToken['id']} based on {token['id']}",
-					{"PRV Attr": tokenAttrs, "NEW Attr": newAttributes},
-					# severity=Ros.LoggingSeverity.ERROR
-				)
-				Ros.Log(
-					f"Token {newToken['id']} path",
-					newToken["path"],
-					# severity=Ros.LoggingSeverity.ERROR
-				)
-				ps = iGraph.getContent(destination, "predicates")
+				newToken = self.__createToken(token, path, categories=surviving)
+				Ros.Log(f"Token {newToken['id']} path", newToken["path"])
 				if iGraph.satisfies(destination, statement):
 					Ros.Log(f"Token {newToken['id']} transitioned from {fromState} to {toState}.", severity=Ros.LoggingSeverity.ERROR)
 					self.__addToken(toState, newToken)
@@ -293,13 +291,6 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 
 	def __tokensReportForDot(self) -> dict[str, list[dict[str, str]]]:
 		d: dict[str, list[dict]] = {}
-		visibleIds = [
-			t["id"]
-			for state in self.states
-			if len(self.states[state]["tokens"]) <= self.DOT_RENDER_MAX_TOKENS
-			for t in self.states[state]["tokens"]
-		]
-		fetchedAttrs = self.__fetchTokenAttributes(visibleIds) if visibleIds else {}
 		for state in self.states:
 			if len(self.states[state]["tokens"]) > self.DOT_RENDER_MAX_TOKENS:
 				d[state] = [{
@@ -309,10 +300,12 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			else:
 				d[state] = []
 				for t in self.states[state]["tokens"]:
+					allCats = self.__fetchTraversableCategories(t["id"], [""])
+					catLabels = [c.rsplit("#", 1)[-1].rsplit("/", 1)[-1] for c in allCats.get("", [])]
 					d[state].append({
 						"id": t["id"],
 						"iGraphNode": repr(t["path"][-1]),
-						"attributes": repr(fetchedAttrs.get(t["id"], {})),
+						"categories": ", ".join(catLabels) if catLabels else "*",
 					})
 		return d
 

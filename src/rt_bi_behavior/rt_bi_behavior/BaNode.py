@@ -11,7 +11,6 @@ from rt_bi_behavior.Model.PropositionalBA import PropositionalBA
 from rt_bi_commons.Base.ColdStartableNode import ColdStartable, ColdStartPayload
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Shared.NodeId import NodeId
-from rt_bi_commons.Shared.Traversability import TargetAttributes
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.RtBiInterfaces import RtBiInterfaces
@@ -55,7 +54,7 @@ class BaNode(ColdStartable):
 			self.__grammarDir,
 			self.__grammarFile,
 			self.__tokenPublisher,
-			self.__fetchTokenAttributes,
+			self.__fetchTraversableCategories,
 		)
 		self.waitForColdStartPermission()
 		RtBiInterfaces.subscribeToIGraph(self, self.__onEvent)
@@ -133,33 +132,21 @@ class BaNode(ColdStartable):
 		self.__ba.render()
 
 	__TARGET_IRI_PREFIX = "https://rezateshnizi.com/env/targets#"
-	__TARGET_ATTRIBUTES = ["diameter_bound", "height_bound", "transportation_mode"]
 
-	def __fetchTokenAttributes(self, tokenIds: list[str]) -> dict[str, TargetAttributes]:
-		if not tokenIds:
+	def __fetchTraversableCategories(self, tokenId: str, reqIris: list[str]) -> dict[str, list[str]]:
+		if not reqIris:
 			return {}
 		req = Msgs.RtBiSrv.Tokens.Request()
 		req.json_payload = dumps({
-			"ids": [f"{self.__TARGET_IRI_PREFIX}{tid}" for tid in tokenIds],
-			"attributes": self.__TARGET_ATTRIBUTES,
+			"token_iri": f"{self.__TARGET_IRI_PREFIX}{tokenId}",
+			"req_iris": reqIris,
 		})
-		result: dict[str, TargetAttributes] = {}
+		result: dict[str, list[str]] = {}
 		def onResponse(_req: Msgs.RtBiSrv.Tokens.Request, res: Msgs.RtBiSrv.Tokens.Response) -> Msgs.RtBiSrv.Tokens.Response:
-			Ros.Log("Received response for token attributes request.", res.tokens)
+			Ros.Log("Received response for traversable categories request.", res.tokens)
 			for tokenMsg in res.tokens:
-				shortId = tokenMsg.id.split("#")[-1] if "#" in tokenMsg.id else tokenMsg.id
-				attrs = TargetAttributes()
-				for pred in tokenMsg.attributes:
-					val = pred.value.split("#")[-1] if "#" in pred.value else pred.value
-					if not val:
-						continue
-					if pred.name == "transportation_mode":
-						if "transportation_mode" not in attrs:
-							attrs["transportation_mode"] = []
-						attrs["transportation_mode"].append(val)
-					elif pred.name in ["diameter_bound", "height_bound"]:
-						attrs[pred.name] = val
-				result[shortId] = attrs
+				reqIri = tokenMsg.id
+				result[reqIri] = [pred.value for pred in tokenMsg.attributes if pred.name == "target_category"]
 			return res
 		future = self.__tokensClient.call_async(req)
 		event = threading.Event()

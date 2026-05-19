@@ -260,6 +260,7 @@ class FusekiInterface:
 			transportModes: list[str] = []
 			msg.traversability_max_diameter = ""
 			msg.traversability_max_height = ""
+			msg.traversability_req_iri = ""
 			while i < len(resultHelper) and resultHelper.strVarValue(i, "regularSetId") == regularSetId:
 				transport = resultHelper.strVarValue(i, "allowedTransport")
 				if transport:
@@ -268,6 +269,8 @@ class FusekiInterface:
 					msg.traversability_max_diameter = resultHelper.strVarValue(i, "maxDiameter")
 				if resultHelper.contains(i, "maxHeight"):
 					msg.traversability_max_height = resultHelper.strVarValue(i, "maxHeight")
+				if resultHelper.contains(i, "traversability"):
+					msg.traversability_req_iri = resultHelper.strVarValue(i, "traversability")
 				i += 1
 			Ros.ConcatMessageArray(msg.traversability_transport_req, transportModes)
 			if setType == "static" or setType == "dynamic":
