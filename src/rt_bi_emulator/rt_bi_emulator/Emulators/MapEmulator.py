@@ -1,4 +1,4 @@
-from rt_bi_commons.Base.ColdStartableNode import ColdStartable, ColdStartPayload
+from rt_bi_commons.Base.ColdStartableNode import ColdStartable, CustomPayload
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
@@ -19,18 +19,18 @@ class MapEmulator(ColdStartable):
 		ColdStartable.__init__(self)
 		self.__timeOriginNanoSecs: int = -1
 		self.__mapPublisher = RtBiInterfaces.createProjectiveMapPublisher(self)
-		self.__coldStartPayload: ColdStartPayload | None = None
+		self.__coldStartPayload: CustomPayload | None = None
 		self.__predicatesPublisher = RtBiInterfaces.createPredicatesPublisher(self)
 		self.__rdfClient = RtBiInterfaces.createSpaceTimeClient(self)
 		Ros.WaitForServiceToStart(self, self.__rdfClient)
 		self.waitForColdStartPermission()
 		return
 
-	def onColdStartAllowed(self, payload: ColdStartPayload) -> None:
+	def onColdStartAllowed(self, payload: CustomPayload) -> None:
 		self.__coldStartPayload = payload
 		reqSpatial = Msgs.RtBiSrv.SpaceTime.Request()
 		reqSpatial.query_name = "sets"
-		reqSpatial.json_payload = ColdStartPayload({"predicates": list(self.__coldStartPayload.predicates)}).stringify()
+		reqSpatial.json_payload = CustomPayload({"predicates": list(self.__coldStartPayload.predicates)}).stringify()
 		Ros.SendClientRequest(self, self.__rdfClient, reqSpatial, self.__onRegularSetsResponse)
 		return
 

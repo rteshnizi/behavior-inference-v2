@@ -2,7 +2,7 @@ from json import dumps
 
 from rclpy.parameter import Parameter
 
-from rt_bi_commons.Base.ColdStartableNode import ColdStartable, ColdStartPayload
+from rt_bi_commons.Base.ColdStartableNode import ColdStartable, CustomPayload
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.RtBiInterfaces import RtBiInterfaces
@@ -34,7 +34,7 @@ class Eventifier(ColdStartable, RegionsSubscriber):
 		self.waitForColdStartPermission()
 		return
 
-	def onColdStartAllowed(self, payload: ColdStartPayload) -> None:
+	def onColdStartAllowed(self, payload: CustomPayload) -> None:
 		RtBiInterfaces.subscribeToAffineMap(self, self.enqueueUpdate)
 		RtBiInterfaces.subscribeToSensors(self, self.enqueueUpdate)
 		self.publishColdStartDone()

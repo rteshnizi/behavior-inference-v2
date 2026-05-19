@@ -8,7 +8,7 @@ import threading
 from rt_bi_behavior import package_name
 from rt_bi_behavior.Model.BehaviorIGraph import BehaviorIGraph
 from rt_bi_behavior.Model.PropositionalBA import PropositionalBA
-from rt_bi_commons.Base.ColdStartableNode import ColdStartable, ColdStartPayload
+from rt_bi_commons.Base.ColdStartableNode import ColdStartable, CustomPayload
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Utils import Ros
@@ -88,7 +88,7 @@ class BaNode(ColdStartable):
 		self.__ba.setSymbolicNameOfPredicate(symMap)
 		return
 
-	def onColdStartAllowed(self, payload: ColdStartPayload) -> None:
+	def onColdStartAllowed(self, payload: CustomPayload) -> None:
 		if self.shouldRender: self.__ba.initFlask(self)
 		self.publishColdStartDone({
 			"predicates": self.__ba.predicates,

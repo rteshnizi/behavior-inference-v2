@@ -1,4 +1,4 @@
-from rt_bi_commons.Base.ColdStartableNode import ColdStartPayload
+from rt_bi_commons.Base.ColdStartableNode import CustomPayload
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
@@ -29,20 +29,20 @@ class ColdStartManager(RtBiNode):
 			Ros.WaitForSubscriber(self, topic, nodeName)
 			self.log(f"Sending cold start to node {nodeName}.")
 			if nodeName.startswith("/rt_bi_runtime/dd_rdf"):
-				payload = ColdStartPayload({})
+				payload = CustomPayload({})
 			elif nodeName.startswith(RtBiInterfaces.BA_NODE_PREFIX):
-				payload = ColdStartPayload({})
+				payload = CustomPayload({})
 			elif nodeName.startswith(RtBiInterfaces.KNOWN_REGION_NODE_PREFIX):
 				# TODO: fetch predicates
-				payload = ColdStartPayload({})
+				payload = CustomPayload({})
 			elif nodeName.startswith("/rt_bi_emulator/dynamic_map"):
-				payload = ColdStartPayload({
+				payload = CustomPayload({
 					"predicates": list(self.__predicates),
 				})
 			elif nodeName.startswith("/rt_bi_eventifier/eventifier"):
 				# FIXME: Tell it which affine regions to subscribe to
 				# This is the right thing to do, but RegionSubscriber and ColdStartableNode have conflicting publishers.
-				payload = ColdStartPayload({})
+				payload = CustomPayload({})
 				pass
 			else:
 				raise NotImplementedError(f"ColdStart procedure is not implemented for {nodeName}.")
@@ -52,7 +52,7 @@ class ColdStartManager(RtBiNode):
 
 	def __onColdStartDone(self, msg: Msgs.RtBi.ColdStart) -> None:
 		if msg.json_payload:
-			payload = ColdStartPayload(msg.json_payload)
+			payload = CustomPayload(msg.json_payload)
 			self.log(msg.json_payload)
 			if not payload.done: return
 			self.log(f"Cold start done for node {msg.node_name}.")

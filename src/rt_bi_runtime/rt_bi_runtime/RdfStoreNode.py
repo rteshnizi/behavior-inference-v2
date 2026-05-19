@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from ament_index_python.packages import get_package_share_directory
 
-from rt_bi_commons.Base.ColdStartableNode import ColdStartable, ColdStartPayload
+from rt_bi_commons.Base.ColdStartableNode import ColdStartable, CustomPayload
 from rt_bi_commons.Base.DataDictionaryNode import DataDictionaryNode
 from rt_bi_commons.RosParamParsers.AtomicParsers import StrParser
 from rt_bi_commons.RosParamParsers.ParamParser import ParserBase
@@ -133,12 +133,12 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		return sparql
 
 	def __onSpaceTimeRequest(self, req: SpaceTime.Request, res: SpaceTime.Response) -> SpaceTime.Response:
-		payload = ColdStartPayload(req.json_payload)
+		payload = CustomPayload(req.json_payload)
 		if req.query_name == "sets": res = self.__setQuery(payload, res)
 		else: raise RuntimeError(f"Unexpected query name: {req.query_name}")
 		return res
 
-	def __setQuery(self, payload: ColdStartPayload, res: SpaceTime.Response) -> SpaceTime.Response:
+	def __setQuery(self, payload: CustomPayload, res: SpaceTime.Response) -> SpaceTime.Response:
 		predicateMapping: dict[str, str] = {}
 		ids: list[str] = []
 		whereClauses: list[str] = []
@@ -182,7 +182,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 	__PROPERTY_PREFIX = "https://rezateshnizi.com/rt-bi-v2/property#"
 
 	def __onTargetsRequest(self, req: Tokens.Request, res: Tokens.Response) -> Tokens.Response:
-		payload = ColdStartPayload(req.json_payload)
+		payload = CustomPayload(req.json_payload)
 		if "token_iri" in payload:
 			return self.__onTraversableCategoriesRequest(payload, res)
 		attributes: list[str] = list(payload.get("attributes", []))  # property short names, e.g. ["diameter_bound", "transportation_mode"]
@@ -216,7 +216,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 			Ros.AppendMessage(res.tokens, tokenMsg)
 		return res
 
-	def __onTraversableCategoriesRequest(self, payload: ColdStartPayload, res: Tokens.Response) -> Tokens.Response:
+	def __onTraversableCategoriesRequest(self, payload: CustomPayload, res: Tokens.Response) -> Tokens.Response:
 		tokenIri: str = payload["token_iri"]
 		reqIris: list[str] = list(payload.get("req_iris", []))
 		non_empty_reqs = [r for r in reqIris if r]
@@ -263,7 +263,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		self.__propToOperator = self.__httpInterface.fetchAggregationOperators(sparql)
 		Ros.Log("Loaded aggregation operator cache", self.__propToOperator)
 
-	def onColdStartAllowed(self, payload: ColdStartPayload) -> None:
+	def onColdStartAllowed(self, payload: CustomPayload) -> None:
 		self.__bootstrapOperatorCache()
 		self.publishColdStartDone()
 		return
