@@ -1,7 +1,0 @@
-PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
-PREFIX target:   <https://rezateshnizi.com/env/targets#>
-
-SELECT ?category WHERE {
-	VALUES ?token { # TOKEN_IRI # }
-	?token property:target_category ?category .
-}

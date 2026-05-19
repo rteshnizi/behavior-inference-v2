@@ -155,15 +155,6 @@ class FusekiInterface:
 			Ros.Logger().error(f"SPARQL request failed with the following message: {repr(e)}")
 			raise e
 
-	__VALUE_IRI_PREFIXES: dict[str, str] = {
-		"transportation_mode": "https://rezateshnizi.com/env/transportations#",
-		"diameter_bound": "https://rezateshnizi.com/env/diameters#",
-		"height_bound": "https://rezateshnizi.com/env/heights#",
-	}
-	__TARGET_PREFIX = "https://rezateshnizi.com/env/targets#"
-	__PROPERTY_PREFIX = "https://rezateshnizi.com/rt-bi-v2/property#"
-	__CLASS_PREFIX = "https://rezateshnizi.com/rt-bi-v2/class#"
-
 	def sendUpdate(self, update: str) -> None:
 		Ros.Log(f"Sending Update to Fuseki", [update])
 		response = requests.post(self.__SPARQL_URL, data={ "update": update })
@@ -196,34 +187,6 @@ class FusekiInterface:
 			Ros.ConcatMessageArray(msg.intervals, intervals)
 		return msgsToUpdate
 
-	def fetchTargets(self, query: str) -> dict[str, dict[str, str]]:
-		"""Returns a mapping from target IRI to its effective attribute values.
-		Outer key = the target IRI bound to ?target. Inner dict keys are the other
-		variable names projected by the assembled query (e.g., \"diameter_bound\",
-		\"transportation_mode\"); values are the SPARQL bindings, with empty strings
-		for absent bindings (signaling \"unrestricted\" downstream)."""
-		resultHelper = self.__sendQuery(query)
-		result: dict[str, dict[str, str]] = {}
-		for i in range(len(resultHelper)):
-			targetIri = resultHelper.strVarValue(i, "target")
-			result[targetIri] = {
-				var: resultHelper.strVarValue(i, var)
-				for var in resultHelper.variables
-				if var != "target"
-			}
-		return result
-
-	def fetchAggregationOperators(self, query: str) -> dict[str, str]:
-		"""Returns a mapping from property IRI to operator IRI local-part (e.g., \"minimum\", \"union\").
-		The local-part doubles as the operator template filename basename."""
-		resultHelper = self.__sendQuery(query)
-		mapping: dict[str, str] = {}
-		for i in range(len(resultHelper)):
-			propIri = resultHelper.strVarValue(i, "prop")
-			opIri = resultHelper.strVarValue(i, "op")
-			mapping[propIri] = opIri.split("#")[-1]
-		return mapping
-
 	def fetchTraversableCategories(self, query: str) -> dict[str, list[str]]:
 		"""Returns a mapping from TraversabilityReq IRI to the list of category IRIs that survive it.
 		The query is the filled traversable_categories.rq template."""
@@ -236,12 +199,6 @@ class FusekiInterface:
 				result[reqIri] = []
 			result[reqIri].append(catIri)
 		return result
-
-	def fetchTokenCategories(self, query: str) -> list[str]:
-		"""Returns the list of target_category IRIs currently assigned to the token.
-		The query is the filled token_categories.rq template."""
-		resultHelper = self.__sendQuery(query)
-		return [resultHelper.strVarValue(i, "category") for i in range(len(resultHelper))]
 
 	def fetchSets(self, query: str) -> dict["FusekiInterface.SetTypes", dict[str, Msgs.RtBi.RegularSet]]:
 		resultHelper = self.__sendQuery(query)
