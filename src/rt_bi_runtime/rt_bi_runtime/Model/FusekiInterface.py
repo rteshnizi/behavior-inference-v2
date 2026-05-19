@@ -164,31 +164,17 @@ class FusekiInterface:
 	__PROPERTY_PREFIX = "https://rezateshnizi.com/rt-bi-v2/property#"
 	__CLASS_PREFIX = "https://rezateshnizi.com/rt-bi-v2/class#"
 
-	def __sendUpdate(self, update: str) -> None:
+	def sendUpdate(self, update: str) -> None:
 		Ros.Log(f"Sending Update to Fuseki", [update])
 		response = requests.post(self.__SPARQL_URL, data={ "update": update })
 		response.raise_for_status()
 
-	def insertToken(self, tokenId: str, parentId: str, attributes: list[tuple[str, str]]) -> None:
-		"""Inserts a token as a class:Target individual into the knowledge base via INSERT DATA."""
-		tokenIri = f"<{self.__TARGET_PREFIX}{tokenId}>"
-		triples = [f"\t{tokenIri} a <{self.__CLASS_PREFIX}Target> ."]
-		if parentId:
-			parentIri = f"<{self.__TARGET_PREFIX}{parentId}>"
-			triples.append(f"\t{tokenIri} <{self.__PROPERTY_PREFIX}derived_from> {parentIri} .")
-		for attrName, attrValue in attributes:
-			if not attrValue:
-				continue
-			propIri = f"<{self.__PROPERTY_PREFIX}{attrName}>"
-			if attrName in self.__VALUE_IRI_PREFIXES:
-				valueIri = f"<{self.__VALUE_IRI_PREFIXES[attrName]}{attrValue}>"
-				triples.append(f"\t{tokenIri} {propIri} {valueIri} .")
-			else:
-				escaped = attrValue.replace(chr(92), chr(92)*2).replace('"', chr(92)+'"')
-				triples.append(f"\t{tokenIri} {propIri} \"{escaped}\" .")
-		triplesStr = "\n".join(triples)
-		sparql = f"INSERT DATA {{\n{triplesStr}\n}}"
-		self.__sendUpdate(sparql)
+	def sendAsk(self, query: str) -> bool:
+		"""Sends a SPARQL ASK query and returns the boolean result."""
+		Ros.Log(f"Sending ASK to Fuseki:\n{query}")
+		response = requests.post(self.__SPARQL_URL, data={ "query": query })
+		response.raise_for_status()
+		return bool(response.json().get("boolean", False))
 
 	def fetchGeometryById(self, query: str, msgsToUpdate: dict[str, Msgs.RtBi.RegularSet]) -> dict[str, Msgs.RtBi.RegularSet]:
 		resultHelper = self.__sendQuery(query)

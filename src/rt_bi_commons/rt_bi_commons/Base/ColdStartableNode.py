@@ -9,7 +9,7 @@ from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.RtBiInterfaces import RtBiInterfaces
 from rt_bi_interfaces.msg import ColdStart
 
-_K = Literal["done", "predicates", "dynamic", "affine", "attributes", "ids", "token_iri", "req_iris"]
+_K = Literal["done", "predicates", "dynamic", "affine", "attributes", "ids", "token_iri", "req_iris", "ask_query"]
 # "node_name" is not set in cold start communications since it is in the ROS msg,
 # "node_name" is added here for the RDF node's benefit.
 class CustomPayload(dict[_K, Any]):

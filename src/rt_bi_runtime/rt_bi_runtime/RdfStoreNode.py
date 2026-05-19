@@ -179,10 +179,15 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		fragment = fragment.replace(self["placeholder_out_var"][0], outVar)
 		return fragment
 
-	__PROPERTY_PREFIX = "https://rezateshnizi.com/rt-bi-v2/property#"
-
 	def __onTargetsRequest(self, req: Tokens.Request, res: Tokens.Response) -> Tokens.Response:
 		payload = CustomPayload(req.json_payload)
+		if "ask_query" in payload:
+			result = self.__httpInterface.sendAsk(payload["ask_query"])
+			pred = Msgs.RtBi.Predicate(name="ask_result", value=Msgs.RtBi.Predicate.TRUE if result else Msgs.RtBi.Predicate.FALSE)
+			tokenMsg = Msgs.RtBi.Token(id="ask", stamp=Ros.Now(self).to_msg())
+			Ros.AppendMessage(tokenMsg.attributes, pred)
+			Ros.AppendMessage(res.tokens, tokenMsg)
+			return res
 		if "token_iri" in payload:
 			return self.__onTraversableCategoriesRequest(payload, res)
 		attributes: list[str] = list(payload.get("attributes", []))  # property short names, e.g. ["diameter_bound", "transportation_mode"]
@@ -192,7 +197,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		whereFragments: list[str] = []
 		operatorsDir = self["sparql_dir_operators"][0]
 		for shortName in attributes:
-			propIri = f"{RdfStoreNode.__PROPERTY_PREFIX}{shortName}"
+			propIri = f"https://rezateshnizi.com/rt-bi-v2/property#{shortName}"
 			if propIri not in self.__propToOperator:
 				raise RuntimeError(f"Property {propIri!r} has no property:aggregation_operator declared in the vocabulary.")
 			opLocalPart = self.__propToOperator[propIri]
@@ -269,8 +274,21 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		return
 
 	def __onToken(self, msg: Msgs.RtBi.Token) -> None:
-		attributes = [(p.name, p.value) for p in msg.attributes]
-		self.__httpInterface.insertToken(msg.id, msg.parent_id, attributes)
+		tokenId = msg.id
+		parentId = msg.parent_id
+		catIris = [p.value for p in msg.attributes if p.name == "target_category"]
+		if not parentId:
+			sparql = Path(self.__baseDir, self["sparql_dir"][0], "insert_root_token.rq").read_text()
+			sparql = sparql.replace("# TOKEN_ID #", tokenId)
+			sparql = sparql.replace("# TOKEN_NAME #", tokenId)
+		else:
+			sparql = Path(self.__baseDir, self["sparql_dir"][0], "insert_derived_token.rq").read_text()
+			sparql = sparql.replace("# TOKEN_ID #", tokenId)
+			sparql = sparql.replace("# TOKEN_NAME #", tokenId)
+			sparql = sparql.replace("# PARENT_ID #", parentId)
+			values = " ".join(f"<{iri}>" for iri in catIris)
+			sparql = sparql.replace("# SURVIVING_CATEGORY_IRIS #", values)
+		self.__httpInterface.sendUpdate(sparql)
 
 	def render(self) -> None:
 		return super().render()
