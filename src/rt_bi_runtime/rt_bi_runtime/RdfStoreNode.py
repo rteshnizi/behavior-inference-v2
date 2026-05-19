@@ -14,7 +14,7 @@ from rt_bi_commons.Utils.RtBiInterfaces import RtBiInterfaces
 from rt_bi_interfaces.srv import SpaceTime, Tokens
 from rt_bi_runtime import package_name
 from rt_bi_runtime.Model.FusekiInterface import FusekiInterface
-from rt_bi_runtime.Model.SparqlTransformer import PredicateToQueryStr
+from rt_bi_runtime.Model.SparqlTransformer import PredicateToQueryStr, TargetAskWhereBuilder
 
 QueryTemplates = Literal[
 	"sparql_channel",
@@ -182,7 +182,13 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 	def __onTargetsRequest(self, req: Tokens.Request, res: Tokens.Response) -> Tokens.Response:
 		payload = CustomPayload(req.json_payload)
 		if "ask_query" in payload:
-			result = self.__httpInterface.sendAsk(payload["ask_query"])
+			syntax: str = payload["ask_query"]
+			tokenIri: str = payload.get("token_iri", "")
+			body = TargetAskWhereBuilder(self.__baseDir, self["transition_grammar_dir"][0], self["transition_grammar_file"][0]).buildBody(syntax)
+			sparqlAsk = Path(self.__baseDir, self["sparql_dir"][0], "predicate_ask.rq").read_text()
+			sparqlAsk = sparqlAsk.replace("# TOKEN_IRI #", f"<{tokenIri}>")
+			sparqlAsk = sparqlAsk.replace("# PREDICATE_BODY #", body)
+			result = self.__httpInterface.sendAsk(sparqlAsk)
 			pred = Msgs.RtBi.Predicate(name="ask_result", value=Msgs.RtBi.Predicate.TRUE if result else Msgs.RtBi.Predicate.FALSE)
 			tokenMsg = Msgs.RtBi.Token(id="ask", stamp=Ros.Now(self).to_msg())
 			Ros.AppendMessage(tokenMsg.attributes, pred)

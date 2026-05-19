@@ -1,5 +1,5 @@
 from json import loads
-from typing import Any, cast
+from typing import Any, cast, Callable
 
 import networkx as nx
 
@@ -23,9 +23,9 @@ class BehaviorIGraph(NxUtils.Graph):
 	def createEdgeMarkers(self) -> list:
 		return []
 
-	def satisfies(self, node: NodeId, criterion: TransitionStatement) -> bool:
+	def satisfies(self, node: NodeId, criterion: TransitionStatement, tokenIri: str, askFn: Callable[[str, str], bool]) -> bool:
 		predicates = self.getContent(node, "predicates")
-		return criterion.evaluate(predicates)
+		return criterion.evaluate(tokenIri, askFn, predicates)
 
 	def traversabilityReq(self, node: NodeId) -> TraversabilityRequirements:
 		"""Return the TraversabilityRequirements for this node. `.iri == ""` means unconstrained."""

@@ -29,6 +29,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			grammarFileName: str,
 			tokenPublisher: Ros.Publisher,
 			fetchTraversableCategories: Callable[[str, list[str]], dict[str, list[str]]],
+			askFn: Callable[[str, str], bool],
 		):
 		super().__init__()
 		self.__dotPublisher: Ros.Publisher | None = None
@@ -44,6 +45,8 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		self.__initializedTokens = False
 		self.__tokenPublisher = tokenPublisher
 		self.__fetchTraversableCategories = fetchTraversableCategories
+		self.__askFn = askFn
+		self.__lastIGraph: BehaviorIGraph | None = None
 		self.__buildGraph(states, transitions)
 		return
 
@@ -188,7 +191,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 				path = self.__extendPath(token["path"], extensions[destination])
 				newToken = self.__createToken(token, path, categories=surviving)
 				Ros.Log(f"Token {newToken['id']} path", newToken["path"])
-				if iGraph.satisfies(destination, statement):
+				if iGraph.satisfies(destination, statement, token["id"], self.__askFn):
 					Ros.Log(f"Token {newToken['id']} transitioned from {fromState} to {toState}.", severity=Ros.LoggingSeverity.ERROR)
 					self.__addToken(toState, newToken)
 					if toState in self.__accepting:
@@ -215,6 +218,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		Traverses the BA states in BFS fashion and updates their tokens.
 		BFS traversal ensures tokens are pushed all the way.
 		"""
+		self.__lastIGraph = iGraph
 		Ros.Log(120 * f"┬")
 		totalTokens = 0
 		for s in self.states: totalTokens += len(self.states[s]["tokens"])
@@ -300,12 +304,16 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			else:
 				d[state] = []
 				for t in self.states[state]["tokens"]:
-					allCats = self.__fetchTraversableCategories(t["id"], [""])
-					catLabels = [c.rsplit("#", 1)[-1].rsplit("/", 1)[-1] for c in allCats.get("", [])]
+					lastNode = t["path"][-1]
+					if self.__lastIGraph is not None and lastNode in self.__lastIGraph.nodes:
+						reqIri = self.__lastIGraph.traversabilityReq(lastNode).iri
+						catLabel = reqIri.rsplit("#", 1)[-1] if reqIri else "unconstrained"
+					else:
+						catLabel = "?"
 					d[state].append({
 						"id": t["id"],
-						"iGraphNode": repr(t["path"][-1]),
-						"categories": ", ".join(catLabels) if catLabels else "*",
+						"iGraphNode": repr(lastNode),
+						"categories": catLabel,
 					})
 		return d
 

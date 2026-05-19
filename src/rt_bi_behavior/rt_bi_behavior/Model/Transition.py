@@ -96,6 +96,7 @@ class TransitionStatement:
 		predCollector.visit(self.__parseTree)
 		self.predicates: dict[str, str] = { p: "" for p in predCollector.predicates }
 		"""Map from Transition Syntax to symbolic name."""
+		self.__hasTargetPredicates: bool = any(p.startswith("target.") for p in predCollector.predicates)
 		return
 
 	def __simpleExpRebuildFn(self, property_seq: str, test: str, value: str) -> str:
@@ -123,7 +124,9 @@ class TransitionStatement:
 		self.__symStr = self.__symStr.replace(syntax, symbol)
 		return
 
-	def evaluate(self, predicates: Predicates) -> bool:
+	def evaluate(self, tokenIri: str, askFn: Callable[[str, str], bool], predicates: Predicates) -> bool:
+		if self.__hasTargetPredicates:
+			return askFn(self.__str, tokenIri)
 		evaluator = TransitionEvaluator(
 			self.predicates,
 			predicates,

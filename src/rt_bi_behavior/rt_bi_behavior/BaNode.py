@@ -55,6 +55,7 @@ class BaNode(ColdStartable):
 			self.__grammarFile,
 			self.__tokenPublisher,
 			self.__fetchTraversableCategories,
+			self.__askSparql,
 		)
 		self.waitForColdStartPermission()
 		RtBiInterfaces.subscribeToIGraph(self, self.__onEvent)
@@ -145,6 +146,25 @@ class BaNode(ColdStartable):
 			for tokenMsg in res.tokens:
 				reqIri = tokenMsg.id
 				result[reqIri] = [pred.value for pred in tokenMsg.attributes if pred.name == "target_category"]
+			return res
+		future = self.__tokensClient.call_async(req)
+		event = threading.Event()
+		future.add_done_callback(lambda _: event.set())
+		event.wait()
+		onResponse(req, future.result()) # pyright: ignore[reportArgumentType]
+		return result
+
+	def __askSparql(self, syntax: str, tokenIri: str) -> bool:
+		req = Msgs.RtBiSrv.Tokens.Request()
+		req.json_payload = dumps({"ask_query": syntax, "token_iri": tokenIri})
+		result: bool = False
+		def onResponse(_req: Msgs.RtBiSrv.Tokens.Request, res: Msgs.RtBiSrv.Tokens.Response) -> Msgs.RtBiSrv.Tokens.Response:
+			nonlocal result
+			for tokenMsg in res.tokens:
+				if tokenMsg.id == "ask":
+					for pred in tokenMsg.attributes:
+						if pred.name == "ask_result":
+							result = pred.value == Msgs.RtBi.Predicate.TRUE
 			return res
 		future = self.__tokensClient.call_async(req)
 		event = threading.Event()

@@ -83,3 +83,75 @@ class PredicateToQueryStr:
 		whereClause = self.__toWhere(parseTree)
 		(varBindings, variables) = self.__toBind(parseTree, index)
 		return (whereClause, variables, varBindings)
+
+class TargetAttributeEvaluator(TransitionTransformer):
+	"""Transforms a transition parse tree into a SPARQL WHERE-body fragment.
+	Only `target.*` simple expressions produce SPARQL patterns; non-target
+	expressions return None and are silently dropped.
+	"""
+
+	def NOT(self, _: Any) -> Any: return Discard
+	def AND(self, _: Any) -> str: return "AND"
+	def OR(self, _: Any) -> str: return "OR"
+
+	def property_seq(self, children: list[str]) -> list[str]:
+		return super().property_seq(children)
+
+	def test(self, children: list[str]) -> str:
+		return children[0]
+
+	def value(self, children: list[str]) -> str:
+		v = str(children[0])
+		if v.startswith('"') and v.endswith('"'):
+			return v[1:-1]
+		return v
+
+	def simple_expression(self, children: list) -> "str | None":
+		prop_seq: list[str] = children[0]
+		test_op: str = children[1]
+		val: str = children[2]
+		if prop_seq[0] != "target":
+			return None
+		prop_path = "/".join(f"property:{p}" for p in prop_seq[1:])
+		if test_op == "==":
+			return f"?token {prop_path} {val} ."
+		return f"FILTER NOT EXISTS {{ ?token {prop_path} {val} . }}"
+
+	def negated_expression(self, children: list) -> "str | None":
+		patterns = [c for c in children if c is not None]
+		if not patterns:
+			return None
+		return f"FILTER NOT EXISTS {{\n\t\t{patterns[0]}\n\t}}"
+
+	def expression(self, children: list) -> "str | None":
+		connector: "str | None" = None
+		patterns: list[str] = []
+		for c in children:
+			if c in ("AND", "OR"):
+				connector = c
+			elif c is not None:
+				patterns.append(str(c))
+		if not patterns:
+			return None
+		if connector is None or len(patterns) == 1:
+			return "\n\t".join(patterns)
+		left, right = patterns[0], patterns[1]
+		if connector == "AND":
+			return f"{left}\n\t{right}"
+		return f"{{\n\t\t{left}\n\t}} UNION {{\n\t\t{right}\n\t}}"
+
+	def connector(self, children: list[str]) -> str:
+		return children[0]
+
+class TargetAskWhereBuilder:
+	"""Parses a transition syntax string and produces a SPARQL WHERE-body fragment
+	for use in an ASK query (via predicate_ask.rq)."""
+
+	def __init__(self, baseDir: str, transitionGrammarDir: str, transitionGrammarFileName: str) -> None:
+		super().__init__()
+		self.__transitionParser = TransitionParser(baseDir, transitionGrammarDir, transitionGrammarFileName)
+
+	def buildBody(self, syntax: str) -> str:
+		parseTree = cast(Tree[str], self.__transitionParser.parse(syntax))
+		body = TargetAttributeEvaluator().transform(parseTree)  # pyright: ignore[reportArgumentType]
+		return str(body) if body is not None else ""
