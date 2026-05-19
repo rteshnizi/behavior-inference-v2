@@ -1,0 +1,11 @@
+PREFIX property:       <https://rezateshnizi.com/rt-bi-v2/property#>
+PREFIX category:       <https://rezateshnizi.com/env/categories#>
+PREFIX transportation: <https://rezateshnizi.com/env/transportations#>
+PREFIX diameter:       <https://rezateshnizi.com/env/diameters#>
+PREFIX height:         <https://rezateshnizi.com/env/heights#>
+PREFIX target:         <https://rezateshnizi.com/env/targets#>
+
+ASK {
+	VALUES ?token { # TOKEN_IRI # }
+	# PREDICATE_BODY #
+}

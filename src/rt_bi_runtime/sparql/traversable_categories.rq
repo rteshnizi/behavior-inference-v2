@@ -1,0 +1,19 @@
+PREFIX property:       <https://rezateshnizi.com/rt-bi-v2/property#>
+PREFIX target:         <https://rezateshnizi.com/env/targets#>
+PREFIX traversability: <https://rezateshnizi.com/env/traversability_reqs#>
+
+SELECT DISTINCT ?req ?category WHERE {
+	VALUES ?token { # TOKEN_IRI # }
+	VALUES ?req   { # REQ_IRIS #  }
+
+	?token property:target_category ?category .
+
+	{ FILTER NOT EXISTS { ?req property:transportation_req ?t . } }
+	UNION { ?req property:transportation_req ?t . ?category property:transportation_mode ?t . }
+
+	{ FILTER NOT EXISTS { ?req property:max_diameter ?d . } }
+	UNION { ?req property:max_diameter/property:rank ?maxD . ?category property:diameter_bound/property:rank ?catD . FILTER(?catD <= ?maxD) }
+
+	{ FILTER NOT EXISTS { ?req property:max_height ?h . } }
+	UNION { ?req property:max_height/property:rank ?maxH . ?category property:height_bound/property:rank ?catH . FILTER(?catH <= ?maxH) }
+}

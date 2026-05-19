@@ -1,0 +1,12 @@
+PREFIX class:    <https://rezateshnizi.com/rt-bi-v2/class#>
+PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
+PREFIX target:   <https://rezateshnizi.com/env/targets#>
+
+INSERT {
+	target:# TOKEN_ID # a class:Target ;
+		property:name "# TOKEN_NAME #" ;
+		property:target_category ?cat .
+}
+WHERE {
+	?cat a class:TargetCategory .
+}
