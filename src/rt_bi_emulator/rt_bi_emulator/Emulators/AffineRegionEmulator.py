@@ -9,7 +9,7 @@ from rclpy.parameter import Parameter
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Shared.Pose import Coords
 from rt_bi_commons.Shared.Predicates import Predicates
-from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
+from rt_bi_commons.Shared.Traversability import TraversabilityRestrictions
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_core.Spatial import PolygonFactory, PolygonFactoryKeys
@@ -39,7 +39,7 @@ class AffineRegionEmulator(Generic[_T_Poly], RtBiNode, ABC):
 		self.__cutOffTimeSecs: float = inf
 		self.__ctPoly: ContinuousTimePolygon[_T_Poly] = ContinuousTimePolygon([])
 		self.__predicates = Predicates([])
-		self.__traversability_req = TraversabilityRequirements()
+		self.__traversability_req = TraversabilityRestrictions()
 		self.parseParameters()
 
 	def declareParameters(self) -> None:
@@ -104,8 +104,6 @@ class AffineRegionEmulator(Generic[_T_Poly], RtBiNode, ABC):
 		msg.channel = self.get_fully_qualified_name()
 		msg.predicates = [] # Inherit all other predicates
 		msg.set_type= self.__ctPoly.type.value
-		msg.traversability_max_diameter = ""
-		msg.traversability_max_height = ""
 		return msg
 
 	def render(self) -> None:

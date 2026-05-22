@@ -1,73 +1,73 @@
 from dataclasses import dataclass, field
-from typing import TypedDict
+from math import isnan
+from typing import TypeAlias
 
 
 @dataclass
-class TraversabilityRequirements:
-	"""Constraints a spatial region places on traversing targets."""
-	transportation_req: list[str] = field(default_factory=list)
-	"""Allowed transportation modes. Empty list means unconstrained."""
-	max_diameter: str = ""
-	"""Maximum target diameter in categories."""
-	max_height: str = ""
-	"""Maximum clearance in categories."""
+class DiscreteAttribute:
+	kind: str = "discrete"
+	discrete_value: list[str] = field(default_factory=list)
+
+
+@dataclass
+class RangedAttribute:
+	kind: str = "ranged"
+	range_min: float | None = None
+	range_max: float | None = None
+
+
+AttributeValue: TypeAlias = DiscreteAttribute | RangedAttribute
+
+
+@dataclass
+class Attributes:
+	"""Map of outer attribute name → its reified value.
+
+	Used identically by a target hypothesis (TargetAttributes) and by a
+	region's restrictions (TraversabilityRestrictions); the two aliases below
+	distinguish call sites for clarity.
+	"""
+	items: dict[str, AttributeValue] = field(default_factory=dict)
 
 	@staticmethod
-	def fromDict(d: dict) -> "TraversabilityRequirements":
-		return TraversabilityRequirements(
-			transportation_req=d.get("transportation_req", []),
-			max_diameter=d.get("max_diameter", ""),
-			max_height=d.get("max_height", ""),
-		)
+	def fromDict(d: dict) -> "Attributes":
+		"""Deserialize from the JSON-friendly dict produced by :meth:`asDict`."""
+		items: dict[str, AttributeValue] = {}
+		for name, val in d.get("items", {}).items():
+			kind = val.get("kind", "")
+			if kind == "discrete":
+				items[name] = DiscreteAttribute(discrete_value=list(val.get("discrete_value", [])))
+			elif kind == "ranged":
+				items[name] = RangedAttribute(
+					range_min=val.get("range_min"),
+					range_max=val.get("range_max"),
+				)
+		return Attributes(items=items)
 
 	def asDict(self) -> dict:
-		return {
-			"transportation_req": self.transportation_req,
-			"max_diameter": self.max_diameter,
-			"max_height": self.max_height,
-		}
+		"""Serialize to a JSON-friendly dict (used when storing in iGraph node data)."""
+		result: dict = {}
+		for name, val in self.items.items():
+			if isinstance(val, DiscreteAttribute):
+				result[name] = {"kind": "discrete", "discrete_value": list(val.discrete_value)}
+			elif isinstance(val, RangedAttribute):
+				result[name] = {"kind": "ranged", "range_min": val.range_min, "range_max": val.range_max}
+		return {"items": result}
+
+	@staticmethod
+	def fromMsgArray(attrs: list) -> "Attributes":
+		"""Build :class:`Attributes` from a list of ``Attribute.msg`` objects."""
+		items: dict[str, AttributeValue] = {}
+		for attr in attrs:
+			if attr.kind == "discrete":
+				items[attr.name] = DiscreteAttribute(discrete_value=list(attr.discrete_values))
+			elif attr.kind == "ranged":
+				items[attr.name] = RangedAttribute(
+					range_min=None if isnan(attr.range_min) else attr.range_min,
+					range_max=None if isnan(attr.range_max) else attr.range_max,
+				)
+		return Attributes(items=items)
 
 
-class TargetAttributes(TypedDict, total=False):
-	"""
-	Attributes known (or inferred) for a target hypothesis carried by a token.
-	All keys are optional — an absent key means "don't care" (permissive).
-	"""
-	transportation_mode: list[str]
-	"""Set of possible transportation modes for this hypothesis."""
-	diameter_bound: str
-	"""Physical diameter of the target in categories. e.g., narrow, medium, wide."""
-	height_bound: str
-	"""Physical height of the target in categories. e.g., low, medium, high."""
-
-
-def isCompatible(reqs: TraversabilityRequirements, attrs: TargetAttributes) -> bool:
-	"""
-	Return True when attrs are compatible with reqs.
-
-	- If reqs is None the region is unconstrained → always compatible.
-	- For each constraint present in reqs, if the token has the corresponding
-	  attribute it must satisfy the constraint; absent attributes are ignored
-	  (don't-care / permissive).
-	"""
-	if reqs is None:
-		return True
-
-	# Transportation mode check
-	if reqs.transportation_req and "transportation_mode" in attrs:
-		allowed = set(reqs.transportation_req)
-		token_modes = set(attrs["transportation_mode"])
-		if not token_modes.intersection(allowed):
-			return False
-
-	# Diameter check
-	# if reqs.max_diameter is not None and "diameter" in attrs:
-	# 	if attrs["diameter"] > reqs.max_diameter:
-	# 		return False
-
-	# Clearance check
-	# if reqs.max_height is not None and "height" in attrs:
-	# 	if attrs["height"] > reqs.max_height:
-	# 		return False
-
-	return True
+TargetAttributes: TypeAlias = Attributes
+TraversabilityRestrictions: TypeAlias = Attributes

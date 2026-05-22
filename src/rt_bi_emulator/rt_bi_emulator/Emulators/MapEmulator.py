@@ -68,8 +68,6 @@ class MapEmulator(ColdStartable):
 		msg.id = setId
 		msg.stamp = Msgs.toTimeMsg(eventTime)
 		msg.set_type = setType
-		msg.traversability_max_diameter = ""
-		msg.traversability_max_height = ""
 		for predicate in predicateNames:
 			p = Msgs.RtBi.Predicate(name=predicate, value=Msgs.RtBi.Predicate.TRUE if val else Msgs.RtBi.Predicate.FALSE)
 			Ros.AppendMessage(msg.predicates, p)

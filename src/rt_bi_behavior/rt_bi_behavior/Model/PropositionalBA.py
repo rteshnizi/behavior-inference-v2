@@ -10,7 +10,7 @@ from rt_bi_behavior.Model.BehaviorIGraph import BehaviorIGraph
 from rt_bi_behavior.Model.State import State, Token, tokenToMsg
 from rt_bi_behavior.Model.Transition import Transition, TransitionStatement
 from rt_bi_commons.Shared.NodeId import NodeId
-from rt_bi_commons.Shared.Traversability import TargetAttributes
+from rt_bi_commons.Shared.Traversability import Attributes as TargetAttributes
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 
@@ -126,7 +126,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		parentId = parent["id"] if parent is not None else ""
 		tokenMsg = tokenToMsg(token, parentId=parentId, attributes=attributes)
 		self.__tokenPublisher.publish(tokenMsg)
-		Ros.Log(f"Published token {token['id']}", attributes)
+		Ros.Log(f"Published token {token['id']}", attributes.asDict() if attributes else None)
 		self.__tokenCounter += 1
 		return token
 

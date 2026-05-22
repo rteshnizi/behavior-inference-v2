@@ -188,34 +188,61 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 
 	def __onTargetsRequest(self, req: Tokens.Request, res: Tokens.Response) -> Tokens.Response:
 		payload = ColdStartPayload(req.json_payload)
-		attributes: list[str] = list(payload.get("attributes", []))  # property short names, e.g. ["diameter_bound", "transportation_mode"]
-		ids: list[str] = list(payload.get("ids", []))                # full target IRIs, e.g. ["https://rezateshnizi.com/env/targets#t3"]
+		attributes: list[str] = list(payload.get("attributes", []))  # outer property short names
+		ids: list[str] = list(payload.get("ids", []))                 # full target IRIs
 		selectFragments: list[str] = []
 		groupByFragments: list[str] = []
 		whereFragments: list[str] = []
 		operatorsDir = self["sparql_dir_operators"][0]
 		for shortName in attributes:
 			propIri = f"{RdfStoreNode.__PROPERTY_PREFIX}{shortName}"
-			if propIri not in self.__propToOperator:
-				raise RuntimeError(f"Property {propIri!r} has no property:aggregation_operator declared in the vocabulary.")
-			opLocalPart = self.__propToOperator[propIri]
-			opTemplate = Path(self.__baseDir, self["sparql_dir"][0], operatorsDir, f"{opLocalPart}.rq").read_text()
-			selSec = self.__extractFragment(opTemplate, self["markup_select_fragment"][0])
-			gbSec = self.__extractFragment(opTemplate, self["markup_group_by_fragment"][0])
-			whSec = self.__extractFragment(opTemplate, self["markup_where_fragment"][0])
-			if selSec: selectFragments.append(self.__substituteOperatorPlaceholders(selSec, f"<{propIri}>", shortName))
-			if gbSec: groupByFragments.append(self.__substituteOperatorPlaceholders(gbSec, f"<{propIri}>", shortName))
-			if whSec: whereFragments.append(self.__substituteOperatorPlaceholders(whSec, f"<{propIri}>", shortName))
+			if propIri not in self.__attributeKindCache:
+				raise RuntimeError(f"Property {propIri!r} has no rdfs:range declared in the vocabulary.")
+			kind = self.__attributeKindCache[propIri]
+			pathStr = f"<{propIri}>"
+			if kind == "discrete":
+				opTemplate = Path(self.__baseDir, self["sparql_dir"][0], operatorsDir, "intersection.rq").read_text()
+				selSec = self.__extractFragment(opTemplate, self["markup_select_fragment"][0])
+				gbSec = self.__extractFragment(opTemplate, self["markup_group_by_fragment"][0])
+				whSec = self.__extractFragment(opTemplate, self["markup_where_fragment"][0])
+				if selSec: selectFragments.append(self.__substituteOperatorPlaceholders(selSec, pathStr, shortName))
+				if gbSec: groupByFragments.append(self.__substituteOperatorPlaceholders(gbSec, pathStr, shortName))
+				if whSec: whereFragments.append(self.__substituteOperatorPlaceholders(whSec, pathStr, shortName))
+			elif kind == "ranged":
+				for opFile, outVar in [("range_min.rq", f"{shortName}_min"), ("range_max.rq", f"{shortName}_max")]:
+					opTemplate = Path(self.__baseDir, self["sparql_dir"][0], operatorsDir, opFile).read_text()
+					selSec = self.__extractFragment(opTemplate, self["markup_select_fragment"][0])
+					gbSec = self.__extractFragment(opTemplate, self["markup_group_by_fragment"][0])
+					whSec = self.__extractFragment(opTemplate, self["markup_where_fragment"][0])
+					if selSec: selectFragments.append(self.__substituteOperatorPlaceholders(selSec, pathStr, outVar))
+					if gbSec: groupByFragments.append(self.__substituteOperatorPlaceholders(gbSec, pathStr, outVar))
+					if whSec: whereFragments.append(self.__substituteOperatorPlaceholders(whSec, pathStr, outVar))
 		sparql = self.__fillTemplate("sparql_targets", ids, whereFragments, selectFragments, [], [], groupByFragments)
 		targetAttrs = self.__httpInterface.fetchTargets(sparql)
 		Ros.Log(f"Targets query returned {len(targetAttrs)} target(s)", targetAttrs)
+		import math as _math
 		for tokenIri, attrDict in targetAttrs.items():
 			tokenMsg = Msgs.RtBi.Token()
 			tokenMsg.id = tokenIri
 			tokenMsg.stamp = Ros.Now(self).to_msg()
-			for attrName, attrValue in attrDict.items():
-				predicate = Msgs.RtBi.Predicate(name=attrName, value=attrValue)
-				Ros.AppendMessage(tokenMsg.attributes, predicate)
+			for shortName in attributes:
+				propIri = f"{RdfStoreNode.__PROPERTY_PREFIX}{shortName}"
+				kind = self.__attributeKindCache[propIri]
+				if kind == "discrete":
+					rawVal = attrDict.get(shortName, "")
+					values = [v.strip() for v in rawVal.split(",") if v.strip()] if rawVal else []
+					attr = Msgs.RtBi.Attribute(name=shortName, kind="discrete")
+					attr.discrete_values = values
+					Ros.AppendMessage(tokenMsg.attributes, attr)
+				elif kind == "ranged":
+					minVal = attrDict.get(f"{shortName}_min", "")
+					maxVal = attrDict.get(f"{shortName}_max", "")
+					attr = Msgs.RtBi.Attribute(
+						name=shortName, kind="ranged",
+						range_min=float(minVal) if minVal else _math.nan,
+						range_max=float(maxVal) if maxVal else _math.nan,
+					)
+					Ros.AppendMessage(tokenMsg.attributes, attr)
 			Ros.AppendMessage(res.tokens, tokenMsg)
 		return res
 
@@ -253,8 +280,8 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		return
 
 	def __onToken(self, msg: Msgs.RtBi.Token) -> None:
-		attributes = [(p.name, p.value) for p in msg.attributes]
-		self.__httpInterface.insertToken(msg.id, msg.parent_id, attributes)
+		attrs = Ros.AsList(msg.attributes, Msgs.RtBi.Attribute)
+		self.__httpInterface.insertToken(msg.id, msg.parent_id, attrs)
 
 	def render(self) -> None:
 		return super().render()

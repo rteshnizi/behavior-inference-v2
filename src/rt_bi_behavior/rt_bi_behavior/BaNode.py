@@ -11,7 +11,8 @@ from rt_bi_behavior.Model.PropositionalBA import PropositionalBA
 from rt_bi_commons.Base.ColdStartableNode import ColdStartable, ColdStartPayload
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Shared.NodeId import NodeId
-from rt_bi_commons.Shared.Traversability import TargetAttributes
+from rt_bi_commons.Shared.Traversability import Attributes as TargetAttributes
+import rt_bi_commons.Shared.Traversability as _Traversability
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.RtBiInterfaces import RtBiInterfaces
@@ -133,7 +134,7 @@ class BaNode(ColdStartable):
 		self.__ba.render()
 
 	__TARGET_IRI_PREFIX = "https://rezateshnizi.com/env/targets#"
-	__TARGET_ATTRIBUTES = ["diameter_bound", "height_bound", "transportation_mode"]
+	__TARGET_ATTRIBUTES = ["transportation_mode", "diameter", "height", "age"]
 
 	def __fetchTokenAttributes(self, tokenIds: list[str]) -> dict[str, TargetAttributes]:
 		if not tokenIds:
@@ -149,16 +150,15 @@ class BaNode(ColdStartable):
 			for tokenMsg in res.tokens:
 				shortId = tokenMsg.id.split("#")[-1] if "#" in tokenMsg.id else tokenMsg.id
 				attrs = TargetAttributes()
-				for pred in tokenMsg.attributes:
-					val = pred.value.split("#")[-1] if "#" in pred.value else pred.value
-					if not val:
-						continue
-					if pred.name == "transportation_mode":
-						if "transportation_mode" not in attrs:
-							attrs["transportation_mode"] = []
-						attrs["transportation_mode"].append(val)
-					elif pred.name in ["diameter_bound", "height_bound"]:
-						attrs[pred.name] = val
+				for attr in Ros.AsList(tokenMsg.attributes, Msgs.RtBi.Attribute):
+					if attr.kind == "discrete":
+						attrs.items[attr.name] = _Traversability.DiscreteAttribute(
+							discrete_value=list(attr.discrete_values))
+					elif attr.kind == "ranged":
+						import math as _math
+						attrs.items[attr.name] = _Traversability.RangedAttribute(
+							range_min=None if _math.isnan(attr.range_min) else attr.range_min,
+							range_max=None if _math.isnan(attr.range_max) else attr.range_max)
 				result[shortId] = attrs
 			return res
 		future = self.__tokensClient.call_async(req)

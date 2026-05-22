@@ -4,7 +4,7 @@ from typing import Any, TypeAlias, cast, final
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Shared.MinQueue import MinQueue
 from rt_bi_commons.Shared.Predicates import Predicates
-from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
+from rt_bi_commons.Shared.Traversability import Attributes, TraversabilityRestrictions
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.RViz import RViz
@@ -117,14 +117,9 @@ class RegionsSubscriber(RtBiNode, ABC):
 			self.__storeGeometry(poly.id.regionId, poly)
 		return
 
-	def __parseTraversability(self, regularSet: Msgs.RtBi.RegularSet) -> TraversabilityRequirements:
-		transport_req = list(regularSet.traversability_transport_req)
-		t = TraversabilityRequirements(
-			transportation_req=transport_req,
-			max_diameter=regularSet.traversability_max_diameter,
-			max_height=regularSet.traversability_max_height,
-		)
-		return t
+	def __parseTraversability(self, regularSet: Msgs.RtBi.RegularSet) -> TraversabilityRestrictions:
+		attrs_msgs = Ros.AsList(regularSet.traversability_restrictions, Msgs.RtBi.Attribute)
+		return Attributes.fromMsgArray(attrs_msgs)
 
 	def __createTracklets(self, regularSet: Msgs.RtBi.RegularSet) -> dict[str, Tracklet]:
 		tracklets = {}

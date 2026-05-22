@@ -2,7 +2,7 @@ from math import isnan, nan
 from typing import Any, Final, Generic, TypeVar, cast
 
 from rt_bi_commons.Shared.Predicates import Predicates
-from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
+from rt_bi_commons.Shared.Traversability import TraversabilityRestrictions
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Geometry import AffineTransform, GeometryLib, Shapely
 from rt_bi_core.Spatial import PolygonFactory, PolygonFactoryKeys
@@ -103,8 +103,8 @@ class ContinuousTimePolygon(Generic[_T_Poly]):
 		i = self.timeNanoSecsToIndex(timeNanoSecs)
 		return self.configs[i].predicates
 
-	def traversabilityReqs(self, timeNanoSecs: int) -> TraversabilityRequirements:
-		if self.length == 0: return TraversabilityRequirements([])
+	def traversabilityReqs(self, timeNanoSecs: int) -> TraversabilityRestrictions:
+		if self.length == 0: return TraversabilityRestrictions({})
 		i = self.timeNanoSecsToIndex(timeNanoSecs)
 		return self.configs[i].traversability_reqs
 

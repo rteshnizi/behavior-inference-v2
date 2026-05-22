@@ -22,7 +22,7 @@ rt_bi_runtime:
       placeholder_where: "# WHERE #####################################"
       placeholder_group_by: "# GROUP_BY ##################################"
       placeholder_filter_traversability: "# FILTER_TRAVERSABILITY #####################"
-      placeholder_prop_uri: "# PROP_URI #"
+      placeholder_prop_uri: "# PATH #"
       placeholder_out_var: "# OUT_VAR #"
       markup_select_fragment: "# SELECT_FRAGMENT ##############"
       markup_group_by_fragment: "# GROUP_BY_FRAGMENT ############"

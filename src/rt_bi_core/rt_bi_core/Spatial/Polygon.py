@@ -5,7 +5,7 @@ from typing import Literal
 from rt_bi_commons.Shared.Color import RGBA, ColorNames, ColorUtils
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Shared.Predicates import Predicates
-from rt_bi_commons.Shared.Traversability import TraversabilityRequirements
+from rt_bi_commons.Shared.Traversability import TraversabilityRestrictions
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Geometry import AffineTransform, GeometryLib, Shapely
 from rt_bi_commons.Utils.Msgs import Msgs
@@ -65,7 +65,7 @@ class Polygon(ABC):
 			predicates: Predicates,
 			timeNanoSecs: int,
 			hIndex: int,
-			traversability_reqs: TraversabilityRequirements,
+			traversability_reqs: TraversabilityRestrictions,
 			interiorColor: RGBA = ColorNames.GREY_DARK,
 			interior: Shapely.Polygon | None = None,
 			renderLineWidth = 2.5,
@@ -140,7 +140,7 @@ class Polygon(ABC):
 		return
 
 	@property
-	def traversability_reqs(self) -> TraversabilityRequirements:
+	def traversability_reqs(self) -> TraversabilityRestrictions:
 		return self.__traversability_reqs
 
 	@property
@@ -299,6 +299,4 @@ class Polygon(ABC):
 		polyMsg.center_of_rotation = Msgs.toPointMsg(self.centerOfRotation)
 		msg.polygons = [polyMsg]
 		msg.set_type = self.type.value
-		msg.traversability_max_diameter = ""
-		msg.traversability_max_height = ""
 		return msg

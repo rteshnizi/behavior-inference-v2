@@ -157,8 +157,6 @@ class FusekiInterface:
 
 	__VALUE_IRI_PREFIXES: dict[str, str] = {
 		"transportation_mode": "https://rezateshnizi.com/env/transportations#",
-		"diameter_bound": "https://rezateshnizi.com/env/diameters#",
-		"height_bound": "https://rezateshnizi.com/env/heights#",
 	}
 	__TARGET_PREFIX = "https://rezateshnizi.com/env/targets#"
 	__PROPERTY_PREFIX = "https://rezateshnizi.com/rt-bi-v2/property#"
@@ -169,23 +167,40 @@ class FusekiInterface:
 		response = requests.post(self.__SPARQL_URL, data={ "update": update })
 		response.raise_for_status()
 
-	def insertToken(self, tokenId: str, parentId: str, attributes: list[tuple[str, str]]) -> None:
-		"""Inserts a token as a class:Target individual into the knowledge base via INSERT DATA."""
+	def insertToken(self, tokenId: str, parentId: str, attributes: list) -> None:
+		"""Inserts a token as a class:Target individual into the knowledge base via INSERT DATA.
+
+		attributes is a list of Attribute.msg objects (kind=="discrete" or "ranged").
+		Each attribute is serialized as a reified blank node matching the ontology shape.
+		"""
+		import math as _math
 		tokenIri = f"<{self.__TARGET_PREFIX}{tokenId}>"
+		bnodeBase = tokenId.replace("#", "_").replace(":", "_").replace("/", "_")
 		triples = [f"\t{tokenIri} a <{self.__CLASS_PREFIX}Target> ."]
 		if parentId:
 			parentIri = f"<{self.__TARGET_PREFIX}{parentId}>"
 			triples.append(f"\t{tokenIri} <{self.__PROPERTY_PREFIX}derived_from> {parentIri} .")
-		for attrName, attrValue in attributes:
-			if not attrValue:
-				continue
-			propIri = f"<{self.__PROPERTY_PREFIX}{attrName}>"
-			if attrName in self.__VALUE_IRI_PREFIXES:
-				valueIri = f"<{self.__VALUE_IRI_PREFIXES[attrName]}{attrValue}>"
-				triples.append(f"\t{tokenIri} {propIri} {valueIri} .")
-			else:
-				escaped = attrValue.replace(chr(92), chr(92)*2).replace('"', chr(92)+'"')
-				triples.append(f"\t{tokenIri} {propIri} \"{escaped}\" .")
+		for attr in attributes:
+			propIri = f"<{self.__PROPERTY_PREFIX}{attr.name}>"
+			bnode = f"_:b_{attr.name}_{bnodeBase}"
+			if attr.kind == "discrete":
+				triples.append(f"\t{tokenIri} {propIri} {bnode} .")
+				triples.append(f"\t{bnode} a <{self.__CLASS_PREFIX}DiscreteAttribute> .")
+				for dv in attr.discrete_values:
+					if not dv: continue
+					if attr.name in self.__VALUE_IRI_PREFIXES:
+						valueIri = f"<{self.__VALUE_IRI_PREFIXES[attr.name]}{dv}>"
+					else:
+						valueIri = f"<{dv}>"
+					triples.append(f"\t{bnode} <{self.__PROPERTY_PREFIX}discrete_value> {valueIri} .")
+			elif attr.kind == "ranged":
+				triples.append(f"\t{tokenIri} {propIri} {bnode} .")
+				triples.append(f"\t{bnode} a <{self.__CLASS_PREFIX}RangedAttribute> .")
+				XSD = "http://www.w3.org/2001/XMLSchema#decimal"
+				if not _math.isnan(attr.range_min):
+					triples.append(f'\t{bnode} <{self.__PROPERTY_PREFIX}range_min> "{attr.range_min}"^^<{XSD}> .')
+				if not _math.isnan(attr.range_max):
+					triples.append(f'\t{bnode} <{self.__PROPERTY_PREFIX}range_max> "{attr.range_max}"^^<{XSD}> .')
 		triplesStr = "\n".join(triples)
 		sparql = f"INSERT DATA {{\n{triplesStr}\n}}"
 		self.__sendUpdate(sparql)
@@ -271,20 +286,40 @@ class FusekiInterface:
 			msg.stamp = stamp
 			(setType, msg) = self.__inferSetType(resultHelper, i, msg)
 			msg.predicates = self.__parsePredicates(resultHelper, i)
-			# Collect traversability — transportation_req may span multiple rows
-			transportModes: list[str] = []
-			msg.traversability_max_diameter = ""
-			msg.traversability_max_height = ""
+			# Collect traversability restrictions — allowedTransport may span multiple rows;
+			# range fields are single-valued (first non-empty binding wins).
+			transport_values: list[str] = []
+			diameter_min = diameter_max = height_min = height_max = ""
 			while i < len(resultHelper) and resultHelper.strVarValue(i, "regularSetId") == regularSetId:
 				transport = resultHelper.strVarValue(i, "allowedTransport")
 				if transport:
-					transportModes.append(transport.split("#")[-1])  # strip IRI prefix
-				if resultHelper.contains(i, "maxDiameter"):
-					msg.traversability_max_diameter = resultHelper.strVarValue(i, "maxDiameter")
-				if resultHelper.contains(i, "maxHeight"):
-					msg.traversability_max_height = resultHelper.strVarValue(i, "maxHeight")
+					transport_values.append(transport.split("#")[-1])
+				if not diameter_min: diameter_min = resultHelper.strVarValue(i, "minDiameter")
+				if not diameter_max: diameter_max = resultHelper.strVarValue(i, "maxDiameter")
+				if not height_min: height_min = resultHelper.strVarValue(i, "minHeight")
+				if not height_max: height_max = resultHelper.strVarValue(i, "maxHeight")
 				i += 1
-			Ros.ConcatMessageArray(msg.traversability_transport_req, transportModes)
+			import math as _math
+			restrictions: list[Msgs.RtBi.Attribute] = []
+			if transport_values:
+				_a = Msgs.RtBi.Attribute(name="transportation_mode", kind="discrete")
+				_a.discrete_values = transport_values
+				restrictions.append(_a)
+			if diameter_min or diameter_max:
+				_a = Msgs.RtBi.Attribute(
+					name="diameter", kind="ranged",
+					range_min=float(diameter_min) if diameter_min else _math.nan,
+					range_max=float(diameter_max) if diameter_max else _math.nan,
+				)
+				restrictions.append(_a)
+			if height_min or height_max:
+				_a = Msgs.RtBi.Attribute(
+					name="height", kind="ranged",
+					range_min=float(height_min) if height_min else _math.nan,
+					range_max=float(height_max) if height_max else _math.nan,
+				)
+				restrictions.append(_a)
+			Ros.ConcatMessageArray(msg.traversability_restrictions, restrictions)
 			if setType == "static" or setType == "dynamic":
 				# Static Map is always reachable
 				msg.predicates.append(Msgs.RtBi.Predicate(name="accessible", value=Msgs.RtBi.Predicate.TRUE))
