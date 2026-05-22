@@ -13,11 +13,8 @@
 @prefix aggregation: <https://rezateshnizi.com/env/aggregations#> .
 @prefix transportation: <https://rezateshnizi.com/env/transportations#> .
 @prefix category: <https://rezateshnizi.com/env/categories#> .
-@prefix diameter: <https://rezateshnizi.com/env/diameters#> .
-@prefix height: <https://rezateshnizi.com/env/heights#> .
 @prefix traversability: <https://rezateshnizi.com/env/traversability_reqs#> .
 @prefix target: <https://rezateshnizi.com/env/targets#> .
-@prefix age_group: <https://rezateshnizi.com/env/age_groups#> .
 @prefix set: <https://rezateshnizi.com/env/sets#> .
 
 # region X coordinates
@@ -88,34 +85,40 @@ transportation:walking a class:Transportation ; property:name "walking" .
 transportation:swimming a class:Transportation ; property:name "swimming" .
 transportation:vehicle a class:Transportation ; property:name "vehicle" .
 transportation:bicycle a class:Transportation ; property:name "bicycle" .
-diameter:narrow a class:Diameter ; property:name "narrow" ; property:rank 1 .
-diameter:medium a class:Diameter ; property:name "medium" ; property:rank 2 .
-diameter:wide a class:Diameter ; property:name "wide" ; property:rank 3 .
-height:short a class:Height ; property:name "short" ; property:rank 1 .
-height:medium a class:Height ; property:name "medium" ; property:rank 2 .
-height:tall a class:Height ; property:name "tall" ; property:rank 3 .
 # endregion Target Property Definitions
 
 # region Target Categories
 category:human a class:TargetCategory ;
 	property:name "human" ;
-	property:transportation_mode transportation:walking ;
-	property:height_bound height:medium ;
-	property:diameter_bound diameter:narrow.
+	property:transportation_mode [ a class:DiscreteAttribute ;
+		property:discrete_value transportation:walking ] ;
+	property:diameter [ a class:RangedAttribute ;
+		property:range_min "0.3"^^xsd:decimal ;
+		property:range_max "0.6"^^xsd:decimal ] ;
+	property:height [ a class:RangedAttribute ;
+		property:range_min "1.4"^^xsd:decimal ;
+		property:range_max "2.0"^^xsd:decimal ] .
 
 category:car a class:TargetCategory ;
 	property:name "car" ;
-	property:transportation_mode transportation:vehicle ;
-	property:height_bound height:tall ;
-	property:diameter_bound diameter:wide.
+	property:transportation_mode [ a class:DiscreteAttribute ;
+		property:discrete_value transportation:vehicle ] ;
+	property:diameter [ a class:RangedAttribute ;
+		property:range_min "1.5"^^xsd:decimal ;
+		property:range_max "2.5"^^xsd:decimal ] ;
+	property:height [ a class:RangedAttribute ;
+		property:range_min "1.5"^^xsd:decimal ;
+		property:range_max "2.5"^^xsd:decimal ] .
 
 # endregion Target Categories
 
-# region Traversability Requirements
-traversability:bridge a class:TraversabilityReq ;
-	property:transportation_req transportation:walking ;
-	property:max_diameter diameter:medium .
-# endregion Traversability Requirements
+# region Traversability Restrictions
+traversability:bridge a class:TraversabilityRestriction ;
+	property:transportation_mode [ a class:DiscreteAttribute ;
+		property:discrete_value transportation:walking ] ;
+	property:diameter [ a class:RangedAttribute ;
+		property:range_max "1.0"^^xsd:decimal ] .
+# endregion Traversability Restrictions
 
 # region Space-Time Sets
 set:a a class:SpaceTime ;
@@ -132,7 +135,7 @@ set:bridge a class:SpaceTime ;
 	property:name "Bridge" ;
 	property:geometry polygon:bridge ;
 	property:material material:wood ;
-	property:traversability_req traversability:bridge .
+	property:traversability_restriction traversability:bridge .
 # endregion Space-Time Sets
 
 # Targets will be inserted at runtime

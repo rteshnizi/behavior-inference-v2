@@ -7,8 +7,8 @@
 # (don't-care) and are excluded from the count of constrainers.
 #
 # Substitutions performed at runtime by RdfStoreNode:
-#   # PROP_URI #  -> the full property IRI, e.g. property:transportation_mode
-#   # OUT_VAR #   -> the local-part name used as the output binding, e.g. transportation_mode
+#   # PATH #     -> the outer attribute property IRI, e.g. property:transportation_mode
+#   # OUT_VAR #  -> the local-part name used as the output binding, e.g. transportation_mode
 #
 # Sections delimited by paired identical markers (extracted via __regexMatchPlaceholders):
 # SELECT_FRAGMENT, GROUP_BY_FRAGMENT, WHERE_FRAGMENT.
@@ -30,7 +30,7 @@ OPTIONAL {
 		SELECT ?target (COUNT(DISTINCT ?constrainedAnc_# OUT_VAR #) AS ?totalConstrained_# OUT_VAR #)
 		WHERE {
 			?target property:derived_from* ?constrainedAnc_# OUT_VAR # .
-			?constrainedAnc_# OUT_VAR # # PROP_URI # ?anyVal_# OUT_VAR # .
+			?constrainedAnc_# OUT_VAR # # PATH #/property:discrete_value ?anyVal_# OUT_VAR # .
 		}
 		GROUP BY ?target
 	}
@@ -38,7 +38,7 @@ OPTIONAL {
 		SELECT ?target ?val_# OUT_VAR # (COUNT(DISTINCT ?anc_# OUT_VAR #) AS ?modeCount_# OUT_VAR #)
 		WHERE {
 			?target property:derived_from* ?anc_# OUT_VAR # .
-			?anc_# OUT_VAR # # PROP_URI # ?val_# OUT_VAR # .
+			?anc_# OUT_VAR # # PATH #/property:discrete_value ?val_# OUT_VAR # .
 		}
 		GROUP BY ?target ?val_# OUT_VAR #
 	}

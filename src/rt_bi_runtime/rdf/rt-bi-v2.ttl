@@ -40,72 +40,59 @@ class:Material a rdfs:Class ;
 class:Transportation a rdfs:Class ;
 	rdfs:subClassOf class:Subject ;
 	rdfs:comment "The way this target moves; i.e., mode of transportation." .
-class:Diameter a rdfs:Class ;
-	rdfs:subClassOf class:Subject ;
-	rdfs:comment "The diameter category; e.g., narrow, medium, wide." .
-class:Height a rdfs:Class ;
-	rdfs:subClassOf class:Subject ;
-	rdfs:comment "The height category; e.g., short, medium, tall." .
 # SPACE-TIME SPEC
-class:TraversabilityReq a rdfs:Class ;
+class:TraversabilityRestriction a rdfs:Class ;
 	rdfs:comment "The class of traversal constraint specifications." .
 class:TargetCategory a rdfs:Class ;
 	rdfs:comment "The class of target categories specifying general information about the target." .
 # AGGREGATION RULES
 class:AggregationOperator a rdfs:Class ;
 	rdfs:comment "An operator that determines how a property's values are combined over a derived_from* chain." .
+class:Attribute a rdfs:Class ;
+	rdfs:comment "Abstract base for attribute value wrappers." .
+class:DiscreteAttribute a rdfs:Class ;
+	rdfs:subClassOf class:Attribute ;
+	rdfs:comment "An attribute whose value belongs to a discrete set." .
+class:RangedAttribute a rdfs:Class ;
+	rdfs:subClassOf class:Attribute ;
+	rdfs:comment "An attribute whose value is a real interval [range_min, range_max]." .
 # endregion [CLASSES]
 
 # endregion [SPACE-TIME PROPS]
-# Transportation requirements
 property:material a rdf:Property ;
 	rdfs:domain class:SpaceTime ;
 	rdfs:range class:Material ;
 	rdfs:comment "The physical material of a space-time set." .
-property:transportation_req a rdf:Property ;
-	rdfs:domain class:TraversabilityReq ;
-	rdfs:range class:Transportation ;
-	rdfs:comment "Allowed modes of transportation (can have multiple)" .
-# Size requirements
-property:max_diameter a rdf:Property ;
-	rdfs:domain class:TraversabilityReq ;
-	rdfs:range class:Diameter ;
-	rdfs:comment "Maximum diameter (in meters) that can traverse this space" .
-property:max_height a rdf:Property ;
-	rdfs:domain class:TraversabilityReq ;
-	rdfs:range class:Height ;
-	rdfs:comment "Maximum height requirement." .
 # endregion [SPACE-TIME PROPS]
 
 # region [AGGREGATION RULES]
 property:aggregation_operator a rdf:Property ;
 	rdfs:domain rdf:Property ;
 	rdfs:range class:AggregationOperator .
-aggregation:union a class:AggregationOperator ;
-	rdfs:label "union" .
 aggregation:intersection a class:AggregationOperator ;
 	rdfs:label "intersection" .
-aggregation:minimum a class:AggregationOperator ;
-	rdfs:label "minimum" .
-aggregation:local_only a class:AggregationOperator ;
-	rdfs:label "local-only" .
-property:rank a rdf:Property ;
-	rdfs:domain rdfs:Resource ;
-	rdfs:range xsd:integer ;
-	rdfs:comment "Tells the aggregation rule the order in max/min rules".
+aggregation:range_min a class:AggregationOperator ;
+	rdfs:label "range-min" .
+aggregation:range_max a class:AggregationOperator ;
+	rdfs:label "range-max" .
 # endregion [AGGREGATION RULES]
 
-# region [TARGET SPEC]
-class:AgeGroup a rdfs:Class ;
-	rdfs:subClassOf class:Subject ;
-	rdfs:comment "The Age Group of the target." .
-property:min_age a rdf:Property ;
-	rdfs:domain class:AgeGroup ;
-	rdfs:range xsd:decimal .
-property:max_age a rdf:Property ;
-	rdfs:domain class:AgeGroup ;
-	rdfs:range xsd:decimal .
-# endregion [SPACE-TIME PROPS]
+# region [ATTRIBUTE REIFICATION]
+# Units: diameter and height are in meters; age is in years.
+property:discrete_value a rdf:Property ;
+	rdfs:domain class:DiscreteAttribute ;
+	rdfs:range rdfs:Resource ;
+	property:aggregation_operator aggregation:intersection ;
+	rdfs:comment "The asserted discrete value(s) of this attribute." .
+property:range_min a rdf:Property ;
+	rdfs:domain class:RangedAttribute ;
+	rdfs:range xsd:decimal ;
+	property:aggregation_operator aggregation:range_min .
+property:range_max a rdf:Property ;
+	rdfs:domain class:RangedAttribute ;
+	rdfs:range xsd:decimal ;
+	property:aggregation_operator aggregation:range_max .
+# endregion [ATTRIBUTE REIFICATION]
 
 # region [SUBJECT PROPS]
 property:name a rdf:Property ;
@@ -142,9 +129,9 @@ property:geometry a rdf:Property ;
 	rdfs:domain class:SpaceTime ;
 	rdfs:range class:Polygon ;
 	rdfs:comment "The range of this property describes the geometry of a connected component." .
-property:traversability_req a rdf:Property ;
+property:traversability_restriction a rdf:Property ;
 	rdfs:domain class:SpaceTime ;
-	rdfs:range class:TraversabilityReq ;
+	rdfs:range class:TraversabilityRestriction ;
 	rdfs:comment "Points to constraints that must be satisfied for a target to traverse this space" .
 # endregion [SPATIAL PROPS]
 
@@ -191,20 +178,20 @@ property:target_category a rdf:Property ;
 	rdfs:domain class:Target ;
 	rdfs:range class:TargetCategory ;
 	rdfs:comment "The target's category" .
-property:diameter_bound a rdf:Property ;
-	rdfs:domain class:TargetCategory ;
-	rdfs:range class:Diameter ;
-	rdfs:comment "The target's diameter/width in meters." .
-property:height_bound a rdf:Property ;
-	rdfs:domain class:TargetCategory ;
-	rdfs:range class:Height ;
-	rdfs:comment "The target's height in meters" .
 property:transportation_mode a rdf:Property ;
-	rdfs:domain class:TargetCategory ;
-	rdfs:range class:Transportation ;
-	rdfs:comment "The range of this property is a Transportation specification." .
-property:age_group a rdf:Property ;
-	rdfs:domain class:TargetCategory ;
-	rdfs:range class:AgeGroup ;
-	rdfs:comment "The range of this property is an AgeGroup specification." .
+	rdfs:domain class:Subject ;
+	rdfs:range class:DiscreteAttribute ;
+	rdfs:comment "Mode of transportation; values are reified as DiscreteAttribute blank nodes." .
+property:diameter a rdf:Property ;
+	rdfs:domain class:Subject ;
+	rdfs:range class:RangedAttribute ;
+	rdfs:comment "Diameter/width in meters; values are reified as RangedAttribute blank nodes." .
+property:height a rdf:Property ;
+	rdfs:domain class:Subject ;
+	rdfs:range class:RangedAttribute ;
+	rdfs:comment "Height in meters; values are reified as RangedAttribute blank nodes." .
+property:age a rdf:Property ;
+	rdfs:domain class:Subject ;
+	rdfs:range class:RangedAttribute ;
+	rdfs:comment "Age in years; values are reified as RangedAttribute blank nodes." .
 # endregion [TARGET PROPS]

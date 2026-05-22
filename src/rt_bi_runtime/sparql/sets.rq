@@ -14,7 +14,7 @@ PREFIX x:        <https://rezateshnizi.com/env/xs#>
 PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
 PREFIX y:        <https://rezateshnizi.com/env/ys#>
 
-SELECT ?regularSetId ?static ?dynamic ?affine ?temporal ?traversability ?allowedTransport ?maxDiameter ?maxHeight
+SELECT ?regularSetId ?static ?dynamic ?affine ?temporal ?traversability ?allowedTransport ?minDiameter ?maxDiameter ?minHeight ?maxHeight
 	# SELECT ####################################
 WHERE {
 	?regularSetId a/rdfs:subClassOf* class:SpaceTime .
@@ -22,10 +22,12 @@ WHERE {
 	FILTER NOT EXISTS { ?regularSetId property:material material:obstacle }
 	# No traversability means fully traversable
 	OPTIONAL {
-		?regularSetId property:traversability_req ?traversability .
-		OPTIONAL { ?traversability property:transportation_req ?allowedTransport . }
-		OPTIONAL { ?traversability property:max_diameter ?maxDiameter . }
-		OPTIONAL { ?traversability property:max_height ?maxHeight . }
+		?regularSetId property:traversability_restriction ?traversability .
+		OPTIONAL { ?traversability property:transportation_mode/property:discrete_value ?allowedTransport . }
+		OPTIONAL { ?traversability property:diameter/property:range_min ?minDiameter . }
+		OPTIONAL { ?traversability property:diameter/property:range_max ?maxDiameter . }
+		OPTIONAL { ?traversability property:height/property:range_min ?minHeight . }
+		OPTIONAL { ?traversability property:height/property:range_max ?maxHeight . }
 	}
 	# WHERE #####################################
 	# FILTER_TRAVERSABILITY #####################

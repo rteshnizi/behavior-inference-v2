@@ -1,0 +1,33 @@
+# Range-max aggregation operator fragment.
+# Computes the effective upper bound of a ranged attribute along the
+# derived_from* chain as MIN(range_max) over all constrained ancestors
+# (i.e., the tightest upper bound across all assertions).
+#
+# Ancestors that assert nothing for this attribute are treated as unconstrained
+# (don't-care) and do not contribute an upper bound.
+#
+# Substitutions performed at runtime by RdfStoreNode:
+#   # PATH #     -> the outer attribute property IRI, e.g. property:height
+#   # OUT_VAR #  -> the output binding name, e.g. height_max
+#
+# Sections delimited by paired identical markers (extracted via __regexMatchPlaceholders):
+# SELECT_FRAGMENT, GROUP_BY_FRAGMENT, WHERE_FRAGMENT.
+
+# SELECT_FRAGMENT ##############
+?# OUT_VAR #
+# SELECT_FRAGMENT ##############
+
+# GROUP_BY_FRAGMENT ############
+?# OUT_VAR #
+# GROUP_BY_FRAGMENT ############
+
+# WHERE_FRAGMENT ###############
+OPTIONAL {
+	SELECT ?target (MIN(?val_# OUT_VAR #) AS ?# OUT_VAR #)
+	WHERE {
+		?target property:derived_from* ?anc_# OUT_VAR # .
+		?anc_# OUT_VAR # # PATH #/property:range_max ?val_# OUT_VAR # .
+	}
+	GROUP BY ?target
+}
+# WHERE_FRAGMENT ###############
