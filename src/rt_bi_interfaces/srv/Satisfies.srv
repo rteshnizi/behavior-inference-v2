@@ -1,0 +1,8 @@
+# Token to test
+string token_id
+# Attribute restrictions to test against (inlined into SPARQL by RdfStoreNode)
+rt_bi_interfaces/Attribute[] restrictions
+---
+# True iff the token's chain-aggregated effective attributes have non-empty
+# overlap with every restriction in the request.
+bool satisfies

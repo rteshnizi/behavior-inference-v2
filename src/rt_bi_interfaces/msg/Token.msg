@@ -10,5 +10,5 @@ string parent_id
 # time-handling sugar is provided by the client library
 builtin_interfaces/Time stamp
 
-# Target attributes
-rt_bi_interfaces/Predicate[] attributes
+# Target attributes (reified shape; written to RDF on each propagation step)
+rt_bi_interfaces/Attribute[] attributes

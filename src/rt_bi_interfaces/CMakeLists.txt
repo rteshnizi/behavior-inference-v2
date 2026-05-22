@@ -14,6 +14,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   # Messages
+  "msg/Attribute.msg"
   "msg/ColdStart.msg"
   "msg/DataRefRequest.msg"
   "msg/DataRefResponse.msg"
@@ -28,6 +29,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Tracklet.msg"
   # Services
   "srv/DataReference.srv"
+  "srv/Satisfies.srv"
   "srv/SpaceTime.srv"
   "srv/Tokens.srv"
   DEPENDENCIES builtin_interfaces
