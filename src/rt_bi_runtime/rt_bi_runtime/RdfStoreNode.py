@@ -24,6 +24,7 @@ QueryTemplates = Literal[
 	"sparql_insert",
 	"sparql_targets",
 	"sparql_aggregation_operators",
+	"sparql_attribute_kinds",
 ]
 _Parameters = Literal[
 	"fuseki_server",
@@ -61,6 +62,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 			"sparql_sets": StrParser[_Parameters](self, "sparql_sets"),
 			"sparql_targets": StrParser[_Parameters](self, "sparql_targets"),
 			"sparql_aggregation_operators": StrParser[_Parameters](self, "sparql_aggregation_operators"),
+			"sparql_attribute_kinds": StrParser[_Parameters](self, "sparql_attribute_kinds"),
 			"placeholder_bind": StrParser[_Parameters](self, "placeholder_bind"),
 			"placeholder_ids": StrParser[_Parameters](self, "placeholder_ids"),
 			"placeholder_order": StrParser[_Parameters](self, "placeholder_order"),
@@ -84,6 +86,9 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		# Maps property IRI -> aggregation operator IRI local-part (e.g., "minimum", "union").
 		# Populated by __bootstrapOperatorCache on cold-start permission.
 		self.__propToOperator: dict[str, str] = {}
+		# Maps outer property IRI -> "discrete" or "ranged".
+		# Populated by __bootstrapAttributeKindCache on cold-start permission.
+		self.__attributeKindCache: dict[str, Literal["discrete", "ranged"]] = {}
 		RtBiInterfaces.createSpaceTimeService(self, self.__onSpaceTimeRequest)
 		RtBiInterfaces.createTargetsService(self, self.__onTargetsRequest)
 		RtBiInterfaces.subscribeToToken(self, self.__onToken)
@@ -232,8 +237,18 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		self.__propToOperator = self.__httpInterface.fetchAggregationOperators(sparql)
 		Ros.Log("Loaded aggregation operator cache", self.__propToOperator)
 
+	def __bootstrapAttributeKindCache(self) -> None:
+		"""Populates self.__attributeKindCache by querying the vocabulary for all outer
+		attribute properties whose rdfs:range is class:DiscreteAttribute or class:RangedAttribute.
+		The cache is a stable mapping used at dispatch time to select operator fragments."""
+		fileName = self["sparql_attribute_kinds"][0]
+		sparql = Path(self.__baseDir, self["sparql_dir"][0], fileName).read_text()
+		self.__attributeKindCache = self.__httpInterface.fetchAttributeKinds(sparql)
+		Ros.Log("Loaded attribute kind cache", self.__attributeKindCache)
+
 	def onColdStartAllowed(self, payload: ColdStartPayload) -> None:
 		self.__bootstrapOperatorCache()
+		self.__bootstrapAttributeKindCache()
 		self.publishColdStartDone()
 		return
 

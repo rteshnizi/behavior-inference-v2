@@ -13,6 +13,7 @@ rt_bi_runtime:
       sparql_sets: "sets.rq"
       sparql_targets: "targets.rq"
       sparql_aggregation_operators: "aggregation_operators.rq"
+      sparql_attribute_kinds: "attribute_kinds.rq"
       placeholder_bind: "# BIND ######################################"
       placeholder_ids: "# ID VALUES #############################"
       placeholder_insert: "# INSERT VALUES #############################"

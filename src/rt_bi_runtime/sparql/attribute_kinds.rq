@@ -1,0 +1,8 @@
+PREFIX class:    <https://rezateshnizi.com/rt-bi-v2/class#>
+PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?prop ?kind
+WHERE {
+	?prop rdfs:range ?kind .
+	FILTER (?kind = class:DiscreteAttribute || ?kind = class:RangedAttribute)
+}

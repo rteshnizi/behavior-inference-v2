@@ -228,7 +228,7 @@ class FusekiInterface:
 		return result
 
 	def fetchAggregationOperators(self, query: str) -> dict[str, str]:
-		"""Returns a mapping from property IRI to operator IRI local-part (e.g., \"minimum\", \"union\").
+		"""Returns a mapping from property IRI to operator IRI local-part (e.g., \"intersection\").
 		The local-part doubles as the operator template filename basename."""
 		resultHelper = self.__sendQuery(query)
 		mapping: dict[str, str] = {}
@@ -236,6 +236,21 @@ class FusekiInterface:
 			propIri = resultHelper.strVarValue(i, "prop")
 			opIri = resultHelper.strVarValue(i, "op")
 			mapping[propIri] = opIri.split("#")[-1]
+		return mapping
+
+	def fetchAttributeKinds(self, query: str) -> dict[str, "Literal['discrete', 'ranged']"]:
+		"""Returns a mapping from outer property IRI to attribute kind (\"discrete\" or \"ranged\").
+		Populated from attribute_kinds.rq at cold-start; used by __bootstrapAttributeKindCache."""
+		resultHelper = self.__sendQuery(query)
+		mapping: "dict[str, Literal['discrete', 'ranged']]" = {}
+		for i in range(len(resultHelper)):
+			propIri = resultHelper.strVarValue(i, "prop")
+			kindIri = resultHelper.strVarValue(i, "kind")
+			localPart = kindIri.split("#")[-1]
+			if localPart == "DiscreteAttribute":
+				mapping[propIri] = "discrete"
+			elif localPart == "RangedAttribute":
+				mapping[propIri] = "ranged"
 		return mapping
 
 	def fetchSets(self, query: str) -> dict["FusekiInterface.SetTypes", dict[str, Msgs.RtBi.RegularSet]]:
