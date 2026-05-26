@@ -110,7 +110,7 @@ class RegionsSubscriber(RtBiNode, ABC):
 				"predicates": predicates,
 				"hIndex": -1,
 				"centerOfRotation": poly.centerOfRotation,
-				"traversability_reqs": self.__parseTraversability(regularSet),
+				"traversability": self.__parseTraversability(regularSet),
 			}
 			if poly.type == SensingPolygon.type: kwArgs["tracklets"] = poly.tracklets
 			poly = PolygonFactory(type(poly), kwArgs)
@@ -149,7 +149,7 @@ class RegionsSubscriber(RtBiNode, ABC):
 			"predicates": predicates,
 			"hIndex": -1,
 			"centerOfRotation": Msgs.toCoords(polyMsg.center_of_rotation),
-			"traversability_reqs": self.__parseTraversability(regularSet),
+			"traversability": self.__parseTraversability(regularSet),
 		}
 		match regularSet.set_type:
 			case Msgs.RtBi.RegularSet.STATIC:

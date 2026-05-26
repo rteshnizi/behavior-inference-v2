@@ -161,7 +161,7 @@ class ConnectivityGraph(NxUtils.Graph[GraphPolygon]):
 					predicates=mapPoly.predicates,
 					centerOfRotation=mapPoly.centerOfRotation,
 					envelopeColor=mapPoly.envelopeColor,
-					traversability_reqs=mapPoly.traversability_reqs,
+					traversability=mapPoly.traversability,
 				))
 		else:
 			for sensor in self.sensors:
@@ -182,7 +182,7 @@ class ConnectivityGraph(NxUtils.Graph[GraphPolygon]):
 							predicates=mapPoly.predicates,
 							centerOfRotation=sensor.centerOfRotation,
 							tracklets=tracklets,
-							traversability_reqs=mapPoly.traversability_reqs,
+							traversability=mapPoly.traversability,
 						))
 			for mapPoly in self.map:
 				diff = mapPoly.interior
@@ -202,7 +202,7 @@ class ConnectivityGraph(NxUtils.Graph[GraphPolygon]):
 						predicates=mapPoly.predicates,
 						centerOfRotation=mapPoly.centerOfRotation,
 						envelopeColor=mapPoly.envelopeColor,
-						traversability_reqs=mapPoly.traversability_reqs,
+						traversability=mapPoly.traversability,
 					))
 
 		if len(shadowPolys) == 0: Ros.Logger().warn("No shadows produced.")

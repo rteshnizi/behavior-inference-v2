@@ -25,7 +25,7 @@ PolygonFactoryKeys = Literal[
 	"subPartId",
 	"timeNanoSecs",
 	"tracklets",
-	"traversability_reqs",
+	"traversability",
 ]
 
 class Polygon(ABC):
@@ -65,7 +65,7 @@ class Polygon(ABC):
 			predicates: Predicates,
 			timeNanoSecs: int,
 			hIndex: int,
-			traversability_reqs: TraversabilityRestrictions,
+			traversability: TraversabilityRestrictions,
 			interiorColor: RGBA = ColorNames.GREY_DARK,
 			interior: Shapely.Polygon | None = None,
 			renderLineWidth = 2.5,
@@ -99,7 +99,7 @@ class Polygon(ABC):
 		self.__INTERIOR_COLOR = interiorColor
 		self.__TEXT_COLOR = ColorNames.BLACK if ColorUtils.isLightColor(interiorColor) else ColorNames.WHITE
 		self.__predicates = predicates
-		self.__traversability_reqs = traversability_reqs
+		self.__traversability = traversability
 		if len(kwArgs) > 0 : Ros.Log(f"Unassigned keyword args ignored: {repr(kwArgs)}")
 		self.__edges: list[Shapely.LineString] = []
 		self.__buildEdges()
@@ -140,8 +140,8 @@ class Polygon(ABC):
 		return
 
 	@property
-	def traversability_reqs(self) -> TraversabilityRestrictions:
-		return self.__traversability_reqs
+	def traversability(self) -> TraversabilityRestrictions:
+		return self.__traversability
 
 	@property
 	def predicates(self) -> Predicates:

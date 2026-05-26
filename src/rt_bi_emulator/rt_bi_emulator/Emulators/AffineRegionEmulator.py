@@ -76,7 +76,7 @@ class AffineRegionEmulator(Generic[_T_Poly], RtBiNode, ABC):
 				"centerOfRotation": cor,
 				"timeNanoSecs": timeNanoSecs,
 				"hIndex": -1,
-				"traversability_reqs": self.__traversability_req,
+				"traversability": self.__traversability_req,
 			}
 			poly = PolygonFactory(self.__polyClass, kwArgs)
 			self.log(f"Parsed {poly} config @ {timeNanoSecs}")

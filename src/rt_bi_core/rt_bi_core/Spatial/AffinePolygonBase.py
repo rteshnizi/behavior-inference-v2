@@ -20,7 +20,7 @@ class AffinePolygonBase(Polygon, ABC):
 			centerOfRotation: Coords,
 			timeNanoSecs: int,
 			hIndex: int,
-			traversability_reqs: TraversabilityRestrictions,
+			traversability: TraversabilityRestrictions,
 			**kwArgs
 		) -> None:
 		super().__init__(
@@ -32,7 +32,7 @@ class AffinePolygonBase(Polygon, ABC):
 			envelopeColor=envelopeColor,
 			timeNanoSecs=timeNanoSecs,
 			hIndex=hIndex,
-			traversability_reqs=traversability_reqs,
+			traversability=traversability,
 			**kwArgs
 		)
 		self.__centerOfRotation = centerOfRotation

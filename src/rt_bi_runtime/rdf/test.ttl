@@ -13,7 +13,7 @@
 @prefix aggregation: <https://rezateshnizi.com/env/aggregations#> .
 @prefix transportation: <https://rezateshnizi.com/env/transportations#> .
 @prefix category: <https://rezateshnizi.com/env/categories#> .
-@prefix traversability: <https://rezateshnizi.com/env/traversability_reqs#> .
+@prefix traversability: <https://rezateshnizi.com/env/traversability#> .
 @prefix target: <https://rezateshnizi.com/env/targets#> .
 @prefix set: <https://rezateshnizi.com/env/sets#> .
 

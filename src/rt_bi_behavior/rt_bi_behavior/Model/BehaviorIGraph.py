@@ -27,17 +27,13 @@ class BehaviorIGraph(NxUtils.Graph):
 		predicates = self.getContent(node, "predicates")
 		return criterion.evaluate(predicates, token_id=token_id, checkSatisfiesFn=checkSatisfiesFn)
 
-	def isTraversableBy(self, node: NodeId, attrs: Attributes) -> bool:
-		"""Stub: traversability testing moves to SPARQL in step 7; currently returns True."""
-		return True
-
 	def deltaAttributes(self, node: NodeId) -> Attributes:
 		"""Return the region's traversability restrictions as an Attributes instance.
 
 		The BA asserts these on the new token's RDF row so the derived_from*
 		chain accumulates the effective values at query time.
 		"""
-		d = self.nodes[node].get("traversability_reqs")
+		d = self.nodes[node].get("traversability")
 		if d is None: raise ValueError(f"Node {node} does not have traversability requirements")
 		return Attributes.fromDict(d)
 
@@ -66,8 +62,8 @@ class BehaviorIGraph(NxUtils.Graph):
 		for node in d["nodes"]:
 			node["id"] = NodeId.fromDict(node["id"])
 			node["predicates"] = Predicates(node["predicates"])
-			node["traversability_reqs"] = Attributes.fromDict(node["traversability_reqs"]).asDict()
-			# traversability_reqs is stored as a plain dict produced by Attributes.asDict()
+			node["traversability"] = Attributes.fromDict(node["traversability"]).asDict()
+			# traversability is stored as a plain dict produced by Attributes.asDict()
 		for adj in d["adjacency"]:
 			for edge in adj:
 				edge["id"] = NodeId.fromDict(edge["id"])

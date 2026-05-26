@@ -62,7 +62,7 @@ class ContinuousTimePolygon(Generic[_T_Poly]):
 			"interior": poly,
 			"hIndex": -1,
 			"predicates": self.predicates(timeNanoSecs),
-			"traversability_reqs": self.traversabilityReqs(timeNanoSecs),
+			"traversability": self.traversability(timeNanoSecs),
 		}
 		if self.type == SensingPolygon.type:
 			kwArgs["tracklets"] = {}
@@ -103,10 +103,10 @@ class ContinuousTimePolygon(Generic[_T_Poly]):
 		i = self.timeNanoSecsToIndex(timeNanoSecs)
 		return self.configs[i].predicates
 
-	def traversabilityReqs(self, timeNanoSecs: int) -> TraversabilityRestrictions:
+	def traversability(self, timeNanoSecs: int) -> TraversabilityRestrictions:
 		if self.length == 0: return TraversabilityRestrictions({})
 		i = self.timeNanoSecsToIndex(timeNanoSecs)
-		return self.configs[i].traversability_reqs
+		return self.configs[i].traversability
 
 	@property
 	def name(self) -> str:

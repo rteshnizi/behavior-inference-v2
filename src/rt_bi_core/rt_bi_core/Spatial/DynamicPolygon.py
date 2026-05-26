@@ -19,7 +19,7 @@ class DynamicPolygon(Polygon):
 			predicates: Predicates,
 			timeNanoSecs: int,
 			hIndex: int,
-			traversability_reqs: TraversabilityRestrictions,
+			traversability: TraversabilityRestrictions,
 			**kwArgs
 		) -> None:
 		kwArgs.pop("centerOfRotation", None)
@@ -32,7 +32,7 @@ class DynamicPolygon(Polygon):
 			predicates=predicates,
 			timeNanoSecs=timeNanoSecs,
 			hIndex=hIndex,
-			traversability_reqs=traversability_reqs,
+			traversability=traversability,
 			**kwArgs
 		)
 		return

@@ -149,28 +149,19 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		statement = self[fromState][toState]["statement"]
 		tokens = self.states[fromState]["tokens"].copy()
 		self.states[fromState]["tokens"] = []
-		# Fetch effective attributes from RDF store
-		tokenIds = [t["id"] for t in tokens]
-		fetchedAttrs = self.__fetchTokenAttributes(tokenIds)
-		Ros.Log(f"Fetched attributes for tokens {[t['id'] for t in tokens]}", fetchedAttrs)
-
 		while len(tokens) > 0:
 			token = tokens.pop()
-			tokenAttrs = fetchedAttrs.get(token["id"], TargetAttributes())
 			visited: set[NodeId] = set()
 			for nId in token["path"]: visited.add(nId)
 			# BFS
 			extensions = iGraph.propagateOneStep(token["path"][-1], visited)
 			if len(extensions) == 0: self.__addToken(fromState, token)
-			produced_child = False
+			producedChild = False
 			for destination in extensions:
 				if destination in visited: continue
 				Ros.Log(
 					f"---> Evaluating Destination {destination} <==> Token {token['id']}",
-					{
-						"Req": iGraph.nodes[destination].get("traversability_reqs"),
-						"Attr": tokenAttrs,
-					},
+					iGraph.nodes[destination].get("traversability"),
 					# severity=Ros.LoggingSeverity.ERROR
 				)
 				# Skip hop if token attributes conflict with region requirements
@@ -178,14 +169,14 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					Ros.Log(f"Token {token['id']} cannot traverse to Destination {destination}")
 					continue
 				visited.add(destination)
-				produced_child = True
+				producedChild = True
 				# Assert only this region's raw constraints — the ontology aggregates them
 				newAttributes = iGraph.deltaAttributes(destination)
 				path = self.__extendPath(token["path"], extensions[destination])
 				newToken = self.__createToken(token, path, attributes=newAttributes)
 				Ros.Log(
 					f"Created token {newToken['id']} based on {token['id']}",
-					{"PRV Attr": tokenAttrs, "NEW Attr": newAttributes},
+					newAttributes.asDict(),
 					# severity=Ros.LoggingSeverity.ERROR
 				)
 				Ros.Log(
@@ -201,7 +192,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 						Ros.Log(f"ACCEPTING {newToken['id']}", newToken["path"], severity=Ros.LoggingSeverity.ERROR)
 				else:
 					tokens.append(newToken)
-			if not produced_child and extensions: self.__addToken(fromState, token)
+			if not producedChild and extensions: self.__addToken(fromState, token)
 		return
 
 	def reduceUncertainty(self, state: str, iGraph: BehaviorIGraph) -> None:

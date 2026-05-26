@@ -39,7 +39,7 @@ class NodeData(Generic[_Polygon]):
 	"""The variables of this Class will be stored node attribute key-values."""
 	polygon: Optional[_Polygon] = None
 	predicates: Optional[Predicates] = None
-	traversability_reqs: Optional[TraversabilityRestrictions] = None
+	traversability: Optional[TraversabilityRestrictions] = None
 
 @dataclass(frozen=True)
 class EdgeData:

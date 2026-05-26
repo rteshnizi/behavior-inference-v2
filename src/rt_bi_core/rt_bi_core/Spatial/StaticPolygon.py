@@ -20,7 +20,7 @@ class StaticPolygon(Polygon):
 			predicates: Predicates,
 			timeNanoSecs: int,
 			hIndex: int,
-			traversability_reqs: TraversabilityRestrictions,
+			traversability: TraversabilityRestrictions,
 			**kwArgs
 		) -> None:
 		kwArgs.pop("centerOfRotation", None)
@@ -33,7 +33,7 @@ class StaticPolygon(Polygon):
 			predicates=predicates,
 			timeNanoSecs=timeNanoSecs,
 			hIndex=hIndex,
-			traversability_reqs=traversability_reqs,
+			traversability=traversability,
 			**kwArgs
 		)
 		return
