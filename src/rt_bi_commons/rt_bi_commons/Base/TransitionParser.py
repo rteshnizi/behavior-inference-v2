@@ -28,6 +28,10 @@ class __TransitionVisitorBase(ABC):
 	def AND(self, _: str = "") -> Literal["AND"]: return "AND"
 	def OR(self, _: str = "") -> Literal["OR"]: return "OR"
 	def NOT(self, _: str = "") -> Literal["NOT"]: return "NOT"
+	def INCLUDES(self, _: str = "") -> Literal["INCLUDES"]: return "INCLUDES"
+	def IN(self, _: str = "") -> Literal["IN"]: return "IN"
+	def LTE(self, _: str = "") -> Literal["<="]: return "<="
+	def GTE(self, _: str = "") -> Literal[">="]: return ">="
 	NUMBER = str
 	VARIABLE = str
 	ESCAPED_STRING = str

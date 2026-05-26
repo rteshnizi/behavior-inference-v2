@@ -3,6 +3,7 @@ from json import loads, dumps
 from ament_index_python.packages import get_package_share_directory
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.parameter import Parameter
+from math import isnan, nan
 import threading
 
 from rt_bi_behavior import package_name
@@ -44,6 +45,8 @@ class BaNode(ColdStartable):
 			callback_group=self.__tokensCbGroup,
 		)
 		Ros.WaitForServiceToStart(self, self.__tokensClient)
+		self.__satisfiesClient = RtBiInterfaces.createSatisfiesClient(self)
+		Ros.WaitForServiceToStart(self, self.__satisfiesClient)
 		self.parseParameters()
 		self.__tokenPublisher = RtBiInterfaces.createTokenPublisher(self)
 		self.__ba = PropositionalBA(
@@ -57,6 +60,7 @@ class BaNode(ColdStartable):
 			self.__grammarFile,
 			self.__tokenPublisher,
 			self.__fetchTokenAttributes,
+			self.__checkSatisfies,
 		)
 		self.waitForColdStartPermission()
 		RtBiInterfaces.subscribeToIGraph(self, self.__onEvent)
@@ -155,10 +159,9 @@ class BaNode(ColdStartable):
 						attrs.items[attr.name] = _Traversability.DiscreteAttribute(
 							discrete_value=list(attr.discrete_values))
 					elif attr.kind == "ranged":
-						import math as _math
 						attrs.items[attr.name] = _Traversability.RangedAttribute(
-							range_min=None if _math.isnan(attr.range_min) else attr.range_min,
-							range_max=None if _math.isnan(attr.range_max) else attr.range_max)
+							range_min=None if isnan(attr.range_min) else attr.range_min,
+							range_max=None if isnan(attr.range_max) else attr.range_max)
 				result[shortId] = attrs
 			return res
 		future = self.__tokensClient.call_async(req)
@@ -167,6 +170,29 @@ class BaNode(ColdStartable):
 		event.wait()
 		onResponse(req, future.result()) # pyright: ignore[reportArgumentType]
 		return result
+
+	def __checkSatisfies(self, tokenId: str, restrictions: TargetAttributes) -> bool:
+		req = Msgs.RtBiSrv.Satisfies.Request()
+		req.token_id = tokenId
+		attrs: list[Msgs.RtBi.Attribute] = []
+		for name, val in restrictions.items.items():
+			msg = Msgs.RtBi.Attribute()
+			msg.name = name
+			if val.kind == "discrete":
+				msg.kind = Msgs.RtBi.Attribute.KIND_DISCRETE
+				msg.discrete_values = list(val.discrete_value)
+			else:
+				msg.kind = Msgs.RtBi.Attribute.KIND_RANGED
+				msg.range_min = nan if val.range_min is None else val.range_min
+				msg.range_max = nan if val.range_max is None else val.range_max
+			attrs.append(msg)
+		req.restrictions = attrs
+		future = self.__satisfiesClient.call_async(req)
+		event = threading.Event()
+		future.add_done_callback(lambda _: event.set())
+		event.wait()
+		res: Msgs.RtBiSrv.Satisfies.Response = future.result() # pyright: ignore[reportAssignmentType]
+		return res.satisfies
 
 def main(args=None) -> None:
 	import rclpy

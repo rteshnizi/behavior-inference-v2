@@ -1,0 +1,10 @@
+PREFIX class:    <https://rezateshnizi.com/rt-bi-v2/class#>
+PREFIX property: <https://rezateshnizi.com/rt-bi-v2/property#>
+PREFIX target:   <https://rezateshnizi.com/env/targets#>
+PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>
+
+ASK {
+	BIND( target:# TOKEN_ID # AS ?token )
+
+# RESTRICTION_BLOCKS #
+}

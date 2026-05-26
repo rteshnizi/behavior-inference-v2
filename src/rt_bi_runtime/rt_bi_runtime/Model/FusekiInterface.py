@@ -268,6 +268,14 @@ class FusekiInterface:
 				mapping[propIri] = "ranged"
 		return mapping
 
+	def askSatisfies(self, query: str) -> bool:
+		"""Executes an ASK query (satisfies.rq filled by RdfStoreNode) and returns the boolean result."""
+		Ros.Log(f"Sending ASK Satisfies query to Fuseki:\n{query}")
+		response = requests.post(self.__SPARQL_URL, data={"query": query})
+		response.raise_for_status()
+		j = response.json()
+		return bool(j.get("boolean", False))
+
 	def fetchSets(self, query: str) -> dict["FusekiInterface.SetTypes", dict[str, Msgs.RtBi.RegularSet]]:
 		resultHelper = self.__sendQuery(query)
 		stamp = Ros.Now(self.__node).to_msg()

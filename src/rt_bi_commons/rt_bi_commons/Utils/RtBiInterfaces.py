@@ -47,6 +47,7 @@ class RtBiInterfaces:
 		RT_BI_EVENTIFIER_EVALUATE = "/__rt_bi_eventifier/eval"
 		RT_BI_RUNTIME_DD_RDF = "/__rt_bi_runtime/dd_rdf"
 		RT_BI_RUNTIME_DD_RDF_TARGETS = "/__rt_bi_runtime/dd_rdf/targets"
+		RT_BI_RUNTIME_DD_RDF_SAT = "/__rt_bi_runtime/dd_rdf/satisfies"
 
 	@staticmethod
 	def createSpacePublisher(node: RtBiNode, topic: TopicNames, callbackFunc: Callable = lambda: None, intervalSecs: float = nan) -> tuple[Publisher, Timer | None]:
@@ -136,6 +137,17 @@ class RtBiInterfaces:
 	def createTargetsClient(node: RtBiNode) -> Client:
 		svcName = RtBiInterfaces.ServiceNames.RT_BI_RUNTIME_DD_RDF_TARGETS.value
 		return Ros.CreateClient(node, Msgs.RtBiSrv.Tokens, svcName)
+
+	@staticmethod
+	def createSatisfiesService(node: RtBiNode, callbackFunc: Callable[["Msgs.RtBiSrv.Satisfies.Request", "Msgs.RtBiSrv.Satisfies.Response"], "Msgs.RtBiSrv.Satisfies.Response"]) -> Service:
+		svcName = RtBiInterfaces.ServiceNames.RT_BI_RUNTIME_DD_RDF_SAT.value
+		svc = Ros.CreateService(node, Msgs.RtBiSrv.Satisfies, svcName, callbackFunc)
+		return svc
+
+	@staticmethod
+	def createSatisfiesClient(node: RtBiNode) -> Client:
+		svcName = RtBiInterfaces.ServiceNames.RT_BI_RUNTIME_DD_RDF_SAT.value
+		return Ros.CreateClient(node, Msgs.RtBiSrv.Satisfies, svcName)
 
 	@staticmethod
 	def createColdStartPublisher(node: RtBiNode) -> Publisher:

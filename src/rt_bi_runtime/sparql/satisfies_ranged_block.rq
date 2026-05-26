@@ -1,0 +1,25 @@
+	# --- ranged restriction: # ATTR_NAME # ---
+	FILTER (
+		NOT EXISTS {
+			?token property:derived_from* ?cAnc_# ATTR_VAR # .
+			{ ?cAnc_# ATTR_VAR # property:# ATTR_NAME #/property:range_min [] }
+			UNION
+			{ ?cAnc_# ATTR_VAR # property:# ATTR_NAME #/property:range_max [] }
+		}
+		|| EXISTS {
+			{
+				SELECT ?token
+					(MAX(?valLo_# ATTR_VAR #) AS ?effLo_# ATTR_VAR #)
+					(MIN(?valHi_# ATTR_VAR #) AS ?effHi_# ATTR_VAR #)
+				WHERE {
+					?token property:derived_from* ?anc_# ATTR_VAR # .
+					OPTIONAL { ?anc_# ATTR_VAR # property:# ATTR_NAME #/property:range_min ?valLo_# ATTR_VAR # . }
+					OPTIONAL { ?anc_# ATTR_VAR # property:# ATTR_NAME #/property:range_max ?valHi_# ATTR_VAR # . }
+				}
+				GROUP BY ?token
+			}
+			FILTER (
+				# OVERLAP_FILTER #
+			)
+		}
+	)

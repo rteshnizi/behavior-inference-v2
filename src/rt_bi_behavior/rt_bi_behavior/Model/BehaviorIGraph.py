@@ -1,5 +1,5 @@
 from json import loads
-from typing import Any, cast
+from typing import Any, Callable, Optional, cast
 
 import networkx as nx
 
@@ -23,9 +23,9 @@ class BehaviorIGraph(NxUtils.Graph):
 	def createEdgeMarkers(self) -> list:
 		return []
 
-	def satisfies(self, node: NodeId, criterion: TransitionStatement) -> bool:
+	def satisfies(self, node: NodeId, criterion: TransitionStatement, token_id: str = "", checkSatisfiesFn: "Optional[Callable[[str, Any], bool]]" = None) -> bool:
 		predicates = self.getContent(node, "predicates")
-		return criterion.evaluate(predicates)
+		return criterion.evaluate(predicates, token_id=token_id, checkSatisfiesFn=checkSatisfiesFn)
 
 	def isTraversableBy(self, node: NodeId, attrs: Attributes) -> bool:
 		"""Stub: traversability testing moves to SPARQL in step 7; currently returns True."""

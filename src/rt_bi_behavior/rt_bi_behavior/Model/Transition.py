@@ -1,8 +1,8 @@
-from typing import Callable, Literal, TypedDict, cast
+from typing import Any, Callable, Literal, Optional, TypedDict, cast
 
 from rt_bi_commons.Base.TransitionParser import ParseTree, TransitionInterpreter, TransitionParser, TransitionTransformer, UnexpectedToken, v_args
 from rt_bi_commons.Shared.Predicates import Predicates
-from rt_bi_commons.Utils import Ros
+from rt_bi_commons.Shared.Traversability import Attributes, DiscreteAttribute, RangedAttribute
 
 
 class PredicateCollector(TransitionInterpreter):
@@ -37,11 +37,20 @@ class PredicateCollector(TransitionInterpreter):
 		self.visit_children(tree)
 		if tree.children[0] == self.EQ(): return self.EQ()
 		if tree.children[0] == self.NEQ(): return self.NEQ()
-		raise UnexpectedToken(tree.children[0], {self.EQ, self.NEQ})
+		if tree.children[0] == self.INCLUDES(): return self.INCLUDES()
+		if tree.children[0] == self.IN(): return self.IN()
+		if tree.children[0] == self.LTE(): return self.LTE()
+		if tree.children[0] == self.GTE(): return self.GTE()
+		raise UnexpectedToken(tree.children[0], {self.EQ, self.NEQ, self.INCLUDES, self.IN, self.LTE, self.GTE})
 
 	def value(self, tree: ParseTree) -> str:
 		children: list[str] = self.visit_children(tree)
 		return children[0]
+
+	def range_value(self, tree: ParseTree) -> str:
+		"""Returns a canonical string like '[lo,hi]' for range_value tree nodes."""
+		children: list[str] = self.visit_children(tree)
+		return f"[{children[0]},{children[1]}]"
 
 class TransitionEvaluator(TransitionTransformer):
 	def __init__(self, predicateSymbolMap: dict[str, str], predicates: Predicates, simpleExpRebuildFn: Callable[[str, str, str], str]) -> None:
@@ -87,6 +96,10 @@ class TransitionEvaluator(TransitionTransformer):
 	def value(self, children: list[str]) -> str:
 		return children[0]
 
+	def range_value(self, children: list[str]) -> str:
+		"""Returns canonical range string like '[lo,hi]'."""
+		return f"[{children[0]},{children[1]}]"
+
 class TransitionStatement:
 	def __init__(self, syntax: str, baseDir: str, grammarDir: str, grammarFileName: str) -> None:
 		self.__str: str = syntax
@@ -96,6 +109,10 @@ class TransitionStatement:
 		predCollector.visit(self.__parseTree)
 		self.predicates: dict[str, str] = { p: "" for p in predCollector.predicates }
 		"""Map from Transition Syntax to symbolic name."""
+		# Target-attribute predicates: property_seq starts with "target."
+		self.__targetAttributePredicates: set[str] = {
+			p for p in predCollector.predicates if p.startswith("target.")
+		}
 		return
 
 	def __simpleExpRebuildFn(self, property_seq: str, test: str, value: str) -> str:
@@ -113,6 +130,11 @@ class TransitionStatement:
 	def __eq__(self, other: "TransitionStatement") -> bool:
 		return self.__str == other.__str
 
+	@property
+	def targetAttributePredicates(self) -> set[str]:
+		"""Predicates that reference target attributes (property_seq starts with 'target.')."""
+		return self.__targetAttributePredicates
+
 	def __contains__(self, syntax: str) -> bool:
 		if syntax in self.predicates: return True
 		return False
@@ -123,9 +145,35 @@ class TransitionStatement:
 		self.__symStr = self.__symStr.replace(syntax, symbol)
 		return
 
-	def evaluate(self, predicates: Predicates) -> bool:
+	def evaluate(self, predicates: Predicates, token_id: str = "", checkSatisfiesFn: "Optional[Callable[[str, Any], bool]]" = None) -> bool:
+		# Evaluate target-attribute predicates via checkSatisfiesFn if available
+		if self.__targetAttributePredicates and token_id and checkSatisfiesFn:
+			# Build per-attribute restrictions from target predicates
+			# then AND them with the spatial result
+			for pred in self.__targetAttributePredicates:
+				# pred form: "target.<name> <op> <value>"
+				parts = pred.split(" ", 2)
+				if len(parts) != 3: continue
+				prop_seq, op, val = parts
+				attrName = prop_seq.split(".", 1)[-1]
+				restrictions = Attributes()
+				if op == "INCLUDES":
+					restrictions.items[attrName] = DiscreteAttribute(discrete_value=[val.strip('"')])
+				elif op == "IN":
+					# val like "[0.5,1.8]"
+					inner = val.strip("[]").split(",")
+					restrictions.items[attrName] = RangedAttribute(range_min=float(inner[0]), range_max=float(inner[1]))
+				elif op == "<=":
+					restrictions.items[attrName] = RangedAttribute(range_max=float(val))
+				elif op == ">=":
+					restrictions.items[attrName] = RangedAttribute(range_min=float(val))
+				if not checkSatisfiesFn(token_id, restrictions):
+					return False
+		# Evaluate spatial predicates
+		# Remove target-attribute predicates from the predicate map for spatial evaluation
+		spatialPredicateMap = {k: v for k, v in self.predicates.items() if k not in self.__targetAttributePredicates}
 		evaluator = TransitionEvaluator(
-			self.predicates,
+			spatialPredicateMap,
 			predicates,
 			self.__simpleExpRebuildFn,
 		)

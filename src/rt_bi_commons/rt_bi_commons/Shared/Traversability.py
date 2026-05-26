@@ -1,17 +1,17 @@
 from dataclasses import dataclass, field
 from math import isnan
-from typing import TypeAlias
+from typing import Literal, TypeAlias
 
 
 @dataclass
 class DiscreteAttribute:
-	kind: str = "discrete"
+	kind: Literal["discrete"] = "discrete"
 	discrete_value: list[str] = field(default_factory=list)
 
 
 @dataclass
 class RangedAttribute:
-	kind: str = "ranged"
+	kind: Literal["ranged"] = "ranged"
 	range_min: float | None = None
 	range_max: float | None = None
 

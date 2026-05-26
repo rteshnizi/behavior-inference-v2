@@ -1,0 +1,33 @@
+	# --- discrete restriction: # ATTR_NAME # ---
+	FILTER (
+		NOT EXISTS {
+			?token property:derived_from* ?cAnc_# ATTR_VAR # .
+			?cAnc_# ATTR_VAR # property:# ATTR_NAME #/property:discrete_value [] .
+		}
+		|| EXISTS {
+			{
+				SELECT ?token ?val_# ATTR_VAR #
+				WHERE {
+					{
+						SELECT ?token (COUNT(DISTINCT ?cAnc_# ATTR_VAR #) AS ?totalConstrained_# ATTR_VAR #)
+						WHERE {
+							?token property:derived_from* ?cAnc_# ATTR_VAR # .
+							?cAnc_# ATTR_VAR # property:# ATTR_NAME #/property:discrete_value [] .
+						}
+						GROUP BY ?token
+					}
+					{
+						SELECT ?token ?val_# ATTR_VAR # (COUNT(DISTINCT ?anc_# ATTR_VAR #) AS ?modeCount_# ATTR_VAR #)
+						WHERE {
+							?token property:derived_from* ?anc_# ATTR_VAR # .
+							?anc_# ATTR_VAR # property:# ATTR_NAME #/property:discrete_value ?val_# ATTR_VAR # .
+						}
+						GROUP BY ?token ?val_# ATTR_VAR #
+					}
+					FILTER (?modeCount_# ATTR_VAR # >= ?totalConstrained_# ATTR_VAR #)
+				}
+			}
+			VALUES ?allowed_# ATTR_VAR # { # ALLOWED_IRIS # }
+			FILTER (?val_# ATTR_VAR # = ?allowed_# ATTR_VAR #)
+		}
+	)

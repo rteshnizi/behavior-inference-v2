@@ -1,4 +1,5 @@
 from json import dumps
+from math import isnan, nan
 from pathlib import Path
 from typing import Any, Literal
 
@@ -25,6 +26,7 @@ QueryTemplates = Literal[
 	"sparql_targets",
 	"sparql_aggregation_operators",
 	"sparql_attribute_kinds",
+	"sparql_satisfies",
 ]
 _Parameters = Literal[
 	"fuseki_server",
@@ -40,6 +42,10 @@ _Parameters = Literal[
 	"placeholder_group_by",
 	"placeholder_prop_uri",
 	"placeholder_out_var",
+	"placeholder_token_iri",
+	"placeholder_restriction_blocks",
+	"sparql_satisfies_ranged_block",
+	"sparql_satisfies_discrete_block",
 	"markup_select_fragment",
 	"markup_group_by_fragment",
 	"markup_where_fragment",
@@ -63,6 +69,9 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 			"sparql_targets": StrParser[_Parameters](self, "sparql_targets"),
 			"sparql_aggregation_operators": StrParser[_Parameters](self, "sparql_aggregation_operators"),
 			"sparql_attribute_kinds": StrParser[_Parameters](self, "sparql_attribute_kinds"),
+			"sparql_satisfies": StrParser[_Parameters](self, "sparql_satisfies"),
+			"sparql_satisfies_ranged_block": StrParser[_Parameters](self, "sparql_satisfies_ranged_block"),
+			"sparql_satisfies_discrete_block": StrParser[_Parameters](self, "sparql_satisfies_discrete_block"),
 			"placeholder_bind": StrParser[_Parameters](self, "placeholder_bind"),
 			"placeholder_ids": StrParser[_Parameters](self, "placeholder_ids"),
 			"placeholder_order": StrParser[_Parameters](self, "placeholder_order"),
@@ -71,6 +80,8 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 			"placeholder_group_by": StrParser[_Parameters](self, "placeholder_group_by"),
 			"placeholder_prop_uri": StrParser[_Parameters](self, "placeholder_prop_uri"),
 			"placeholder_out_var": StrParser[_Parameters](self, "placeholder_out_var"),
+			"placeholder_token_iri": StrParser[_Parameters](self, "placeholder_token_iri"),
+			"placeholder_restriction_blocks": StrParser[_Parameters](self, "placeholder_restriction_blocks"),
 			"markup_select_fragment": StrParser[_Parameters](self, "markup_select_fragment"),
 			"markup_group_by_fragment": StrParser[_Parameters](self, "markup_group_by_fragment"),
 			"markup_where_fragment": StrParser[_Parameters](self, "markup_where_fragment"),
@@ -91,6 +102,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		self.__attributeKindCache: dict[str, Literal["discrete", "ranged"]] = {}
 		RtBiInterfaces.createSpaceTimeService(self, self.__onSpaceTimeRequest)
 		RtBiInterfaces.createTargetsService(self, self.__onTargetsRequest)
+		RtBiInterfaces.createSatisfiesService(self, self.__onSatisfiesRequest)
 		RtBiInterfaces.subscribeToToken(self, self.__onToken)
 		self.waitForColdStartPermission()
 
@@ -189,7 +201,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 	def __onTargetsRequest(self, req: Tokens.Request, res: Tokens.Response) -> Tokens.Response:
 		payload = ColdStartPayload(req.json_payload)
 		attributes: list[str] = list(payload.get("attributes", []))  # outer property short names
-		ids: list[str] = list(payload.get("ids", []))                 # full target IRIs
+		ids: list[str] = list(payload.get("ids", []))                # full target IRIs
 		selectFragments: list[str] = []
 		groupByFragments: list[str] = []
 		whereFragments: list[str] = []
@@ -220,7 +232,6 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		sparql = self.__fillTemplate("sparql_targets", ids, whereFragments, selectFragments, [], [], groupByFragments)
 		targetAttrs = self.__httpInterface.fetchTargets(sparql)
 		Ros.Log(f"Targets query returned {len(targetAttrs)} target(s)", targetAttrs)
-		import math as _math
 		for tokenIri, attrDict in targetAttrs.items():
 			tokenMsg = Msgs.RtBi.Token()
 			tokenMsg.id = tokenIri
@@ -239,8 +250,8 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 					maxVal = attrDict.get(f"{shortName}_max", "")
 					attr = Msgs.RtBi.Attribute(
 						name=shortName, kind="ranged",
-						range_min=float(minVal) if minVal else _math.nan,
-						range_max=float(maxVal) if maxVal else _math.nan,
+						range_min=float(minVal) if minVal else nan,
+						range_max=float(maxVal) if maxVal else nan,
 					)
 					Ros.AppendMessage(tokenMsg.attributes, attr)
 			Ros.AppendMessage(res.tokens, tokenMsg)
@@ -278,6 +289,49 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 		self.__bootstrapAttributeKindCache()
 		self.publishColdStartDone()
 		return
+
+	def __buildRestrictionBlocks(self, restrictions: "list[Msgs.RtBi.Attribute]") -> str:
+		"""Builds SPARQL FILTER blocks for each attribute restriction by filling
+		the satisfies_ranged_block.rq / satisfies_discrete_block.rq templates."""
+		rangedTemplate = Path(self.__baseDir, self["sparql_dir"][0], self["sparql_satisfies_ranged_block"][0]).read_text().rstrip()
+		discreteTemplate = Path(self.__baseDir, self["sparql_dir"][0], self["sparql_satisfies_discrete_block"][0]).read_text().rstrip()
+		blocks: list[str] = []
+		for attr in restrictions:
+			name = attr.name
+			v = name.replace("_", "")
+			if attr.kind == "ranged":
+				rLo = attr.range_min
+				rHi = attr.range_max
+				overlap_parts: list[str] = []
+				if not isnan(rHi):
+					overlap_parts.append(f'COALESCE(?effLo_{v}, -1e308) <= "{rHi}"^^xsd:decimal')
+				if not isnan(rLo):
+					overlap_parts.append(f'COALESCE(?effHi_{v}, +1e308) >= "{rLo}"^^xsd:decimal')
+				overlap_filter = " &&\n\t\t\t\t".join(overlap_parts) if overlap_parts else "true"
+				block = (rangedTemplate
+					.replace("# ATTR_NAME #", name)
+					.replace("# ATTR_VAR #", v)
+					.replace("# OVERLAP_FILTER #", overlap_filter)
+				)
+			else:
+				allowed_iris = " ".join(f"<{val}>" for val in attr.discrete_values)
+				block = (discreteTemplate
+					.replace("# ATTR_NAME #", name)
+					.replace("# ATTR_VAR #", v)
+					.replace("# ALLOWED_IRIS #", allowed_iris)
+				)
+			blocks.append(block)
+		return "\n".join(blocks)
+
+	def __onSatisfiesRequest(self, req: "Msgs.RtBiSrv.Satisfies.Request", res: "Msgs.RtBiSrv.Satisfies.Response") -> "Msgs.RtBiSrv.Satisfies.Response":
+		restrictions = Ros.AsList(req.restrictions, Msgs.RtBi.Attribute)
+		restrictionBlocks = self.__buildRestrictionBlocks(restrictions)
+		templatePath = Path(self.__baseDir, self["sparql_dir"][0], self["sparql_satisfies"][0])
+		sparql = templatePath.read_text()
+		sparql = sparql.replace(self["placeholder_token_iri"][0], req.token_id)
+		sparql = sparql.replace(self["placeholder_restriction_blocks"][0], restrictionBlocks)
+		res.satisfies = self.__httpInterface.askSatisfies(sparql)
+		return res
 
 	def __onToken(self, msg: Msgs.RtBi.Token) -> None:
 		attrs = Ros.AsList(msg.attributes, Msgs.RtBi.Attribute)

@@ -1,9 +1,9 @@
 ?start: expression
 
 ?expression:	simple_expression
-				| negated_expression
-				| ("(" expression ")")
-				| (expression connector expression)
+			| negated_expression
+			| ("(" expression ")")
+			| (expression connector expression)
 
 negated_expression: NOT simple_expression
 
@@ -13,11 +13,14 @@ simple_expression: property_seq test value
 
 property_seq: VARIABLE ("." VARIABLE)*
 
-test: EQ | NEQ
+test: EQ | NEQ | INCLUDES | IN | LTE | GTE
 
 value:	_boolean
 		| ESCAPED_STRING
 		| NUMBER
+		| range_value
+
+range_value: "[" NUMBER "," NUMBER "]"
 
 _boolean: TRUE | FALSE
 
@@ -26,6 +29,10 @@ NEQ:		"!="
 AND:		"AND"
 OR:			"OR"
 NOT:		"NOT"
+INCLUDES:	"INCLUDES"
+IN:			"IN"
+LTE:		"<="
+GTE:		">="
 
 TRUE:		"true"
 FALSE:		"false"
