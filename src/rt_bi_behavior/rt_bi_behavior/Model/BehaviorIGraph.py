@@ -23,16 +23,8 @@ class BehaviorIGraph(NxUtils.Graph):
 	def createEdgeMarkers(self) -> list:
 		return []
 
-	def satisfies(self, node: NodeId, criterion: TransitionStatement, token_id: str = "", checkSatisfiesFn: "Optional[Callable[[str, Any], bool]]" = None) -> bool:
-		predicates = self.getContent(node, "predicates")
-		return criterion.evaluate(predicates, token_id=token_id, checkSatisfiesFn=checkSatisfiesFn)
-
-	def deltaAttributes(self, node: NodeId) -> Attributes:
-		"""Return the region's traversability restrictions as an Attributes instance.
-
-		The BA asserts these on the new token's RDF row so the derived_from*
-		chain accumulates the effective values at query time.
-		"""
+	def traversability(self, node: NodeId) -> Attributes:
+		"""Return the region's traversability restrictions as an Attributes instance."""
 		d = self.nodes[node].get("traversability")
 		if d is None: raise ValueError(f"Node {node} does not have traversability requirements")
 		return Attributes.fromDict(d)

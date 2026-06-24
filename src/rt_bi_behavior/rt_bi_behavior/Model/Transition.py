@@ -3,6 +3,7 @@ from typing import Any, Callable, Literal, Optional, TypedDict, cast
 from rt_bi_commons.Base.TransitionParser import ParseTree, TransitionInterpreter, TransitionParser, TransitionTransformer, UnexpectedToken, v_args
 from rt_bi_commons.Shared.Predicates import Predicates
 from rt_bi_commons.Shared.Traversability import Attributes, DiscreteAttribute, RangedAttribute
+from rt_bi_commons.Utils import Ros
 
 
 class PredicateCollector(TransitionInterpreter):
@@ -145,15 +146,16 @@ class TransitionStatement:
 		self.__symStr = self.__symStr.replace(syntax, symbol)
 		return
 
-	def evaluate(self, predicates: Predicates, token_id: str = "", checkSatisfiesFn: "Optional[Callable[[str, Any], bool]]" = None) -> bool:
+	def evaluate(self, predicates: Predicates, token_id: str = "", satisfiesFn: "Optional[Callable[[str, Any], bool]]" = None) -> bool:
 		# Evaluate target-attribute predicates via checkSatisfiesFn if available
-		if self.__targetAttributePredicates and token_id and checkSatisfiesFn:
+		if self.__targetAttributePredicates and token_id and satisfiesFn:
+			Ros.Log(f"Evaluating TRANSITION PREDICATES for token {token_id}", self.__targetAttributePredicates)
 			# Build per-attribute restrictions from target predicates
 			# then AND them with the spatial result
 			for pred in self.__targetAttributePredicates:
 				# pred form: "target.<name> <op> <value>"
-				parts = pred.split(" ", 2)
-				if len(parts) != 3: continue
+				parts = pred.split(" ")
+				if len(parts) != 3: raise ValueError(f"Unexpected predicate format for target attribute predicate: {pred}")
 				prop_seq, op, val = parts
 				attrName = prop_seq.split(".", 1)[-1]
 				restrictions = Attributes()
@@ -167,7 +169,7 @@ class TransitionStatement:
 					restrictions.items[attrName] = RangedAttribute(range_max=float(val))
 				elif op == ">=":
 					restrictions.items[attrName] = RangedAttribute(range_min=float(val))
-				if not checkSatisfiesFn(token_id, restrictions):
+				if not satisfiesFn(token_id, restrictions):
 					return False
 		# Evaluate spatial predicates
 		# Remove target-attribute predicates from the predicate map for spatial evaluation

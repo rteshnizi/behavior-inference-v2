@@ -1,11 +1,13 @@
-from json import loads, dumps
+import threading
+from json import dumps, loads
+from math import isnan, nan
+from typing import cast
 
 from ament_index_python.packages import get_package_share_directory
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.parameter import Parameter
-from math import isnan, nan
-import threading
 
+import rt_bi_commons.Shared.Traversability as _Traversability
 from rt_bi_behavior import package_name
 from rt_bi_behavior.Model.BehaviorIGraph import BehaviorIGraph
 from rt_bi_behavior.Model.PropositionalBA import PropositionalBA
@@ -13,7 +15,6 @@ from rt_bi_commons.Base.ColdStartableNode import ColdStartable, ColdStartPayload
 from rt_bi_commons.Base.RtBiNode import RtBiNode
 from rt_bi_commons.Shared.NodeId import NodeId
 from rt_bi_commons.Shared.Traversability import Attributes as TargetAttributes
-import rt_bi_commons.Shared.Traversability as _Traversability
 from rt_bi_commons.Utils import Ros
 from rt_bi_commons.Utils.Msgs import Msgs
 from rt_bi_commons.Utils.RtBiInterfaces import RtBiInterfaces
@@ -45,7 +46,13 @@ class BaNode(ColdStartable):
 			callback_group=self.__tokensCbGroup,
 		)
 		Ros.WaitForServiceToStart(self, self.__tokensClient)
-		self.__satisfiesClient = RtBiInterfaces.createSatisfiesClient(self)
+		# self.__satisfiesClient = RtBiInterfaces.createSatisfiesClient(self)
+		self.__satisfiesCbGroup = ReentrantCallbackGroup()
+		self.__satisfiesClient = self.create_client(
+			Msgs.RtBiSrv.Satisfies,
+			RtBiInterfaces.ServiceNames.RT_BI_RUNTIME_DD_RDF_SAT.value,
+			callback_group=self.__satisfiesCbGroup,
+		)
 		Ros.WaitForServiceToStart(self, self.__satisfiesClient)
 		self.parseParameters()
 		self.__tokenPublisher = RtBiInterfaces.createTokenPublisher(self)
@@ -60,7 +67,7 @@ class BaNode(ColdStartable):
 			self.__grammarFile,
 			self.__tokenPublisher,
 			self.__fetchTokenAttributes,
-			self.__checkSatisfies,
+			self.__satisfies,
 		)
 		self.waitForColdStartPermission()
 		RtBiInterfaces.subscribeToIGraph(self, self.__onEvent)
@@ -171,7 +178,8 @@ class BaNode(ColdStartable):
 		onResponse(req, future.result()) # pyright: ignore[reportArgumentType]
 		return result
 
-	def __checkSatisfies(self, tokenId: str, restrictions: TargetAttributes) -> bool:
+	def __satisfies(self, tokenId: str, restrictions: TargetAttributes) -> bool:
+		# return True # TODO: Remove this line after testing
 		req = Msgs.RtBiSrv.Satisfies.Request()
 		req.token_id = tokenId
 		attrs: list[Msgs.RtBi.Attribute] = []
@@ -181,17 +189,24 @@ class BaNode(ColdStartable):
 			if val.kind == "discrete":
 				msg.kind = Msgs.RtBi.Attribute.KIND_DISCRETE
 				msg.discrete_values = list(val.discrete_value)
-			else:
+			elif val.kind == "ranged":
 				msg.kind = Msgs.RtBi.Attribute.KIND_RANGED
 				msg.range_min = nan if val.range_min is None else val.range_min
 				msg.range_max = nan if val.range_max is None else val.range_max
+			else:
+				raise ValueError(f"Unknown attribute kind \"{val.kind}\" for attribute \"{name}\".")
 			attrs.append(msg)
 		req.restrictions = attrs
+		Ros.Log(f"Checking satisfies for token {tokenId}, restrictions", restrictions.items)
+		# future = self.__satisfiesClient.call_async(req)
+		# rclpy.spin_until_future_complete(self, future)
+		# res = cast(Msgs.RtBiSrv.Satisfies.Response, future.result())
 		future = self.__satisfiesClient.call_async(req)
 		event = threading.Event()
 		future.add_done_callback(lambda _: event.set())
 		event.wait()
 		res: Msgs.RtBiSrv.Satisfies.Response = future.result() # pyright: ignore[reportAssignmentType]
+		Ros.Log(f"Received response for satisfies check of token {tokenId}.", [res.satisfies])
 		return res.satisfies
 
 def main(args=None) -> None:

@@ -274,6 +274,7 @@ class FusekiInterface:
 		response = requests.post(self.__SPARQL_URL, data={"query": query})
 		response.raise_for_status()
 		j = response.json()
+		Ros.Log(f"ASK Satisfies response:\n{j}")
 		return bool(j.get("boolean", False))
 
 	def fetchSets(self, query: str) -> dict["FusekiInterface.SetTypes", dict[str, Msgs.RtBi.RegularSet]]:

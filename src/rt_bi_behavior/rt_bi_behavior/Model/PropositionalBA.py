@@ -29,7 +29,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			grammarFileName: str,
 			tokenPublisher: Ros.Publisher,
 			fetchTokenAttributes: Callable[[list[str]], dict[str, TargetAttributes]],
-			checkSatisfies: Callable[[str, "TargetAttributes"], bool],
+			satisfies: Callable[[str, TargetAttributes], bool],
 		):
 		super().__init__()
 		self.__dotPublisher: Ros.Publisher | None = None
@@ -45,7 +45,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		self.__initializedTokens = False
 		self.__tokenPublisher = tokenPublisher
 		self.__fetchTokenAttributes = fetchTokenAttributes
-		self.__checkSatisfies = checkSatisfies
+		self.__satisfies = satisfies
 		self.__buildGraph(states, transitions)
 		return
 
@@ -164,14 +164,14 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					iGraph.nodes[destination].get("traversability"),
 					# severity=Ros.LoggingSeverity.ERROR
 				)
-				# Skip hop if token attributes conflict with region requirements
-				if not self.__checkSatisfies(token["id"], iGraph.deltaAttributes(destination)):
+				# Skip hop if token attributes don't satisfy the region's traversability constraints
+				if not self.__satisfies(token["id"], iGraph.traversability(destination)):
 					Ros.Log(f"Token {token['id']} cannot traverse to Destination {destination}")
 					continue
 				visited.add(destination)
 				producedChild = True
 				# Assert only this region's raw constraints — the ontology aggregates them
-				newAttributes = iGraph.deltaAttributes(destination)
+				newAttributes = iGraph.traversability(destination)
 				path = self.__extendPath(token["path"], extensions[destination])
 				newToken = self.__createToken(token, path, attributes=newAttributes)
 				Ros.Log(
@@ -184,8 +184,8 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					newToken["path"],
 					# severity=Ros.LoggingSeverity.ERROR
 				)
-				ps = iGraph.getContent(destination, "predicates")
-				if iGraph.satisfies(destination, statement, token["id"], self.__checkSatisfies):
+				predicates = iGraph.getContent(destination, "predicates")
+				if statement.evaluate(predicates, token["id"], self.__satisfies):
 					Ros.Log(f"Token {newToken['id']} transitioned from {fromState} to {toState}.", severity=Ros.LoggingSeverity.ERROR)
 					self.__addToken(toState, newToken)
 					if toState in self.__accepting:
@@ -201,7 +201,6 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		i = 0
 		while i < (len(tokens)):
 			if tokens[i]["path"][-1] not in iGraph.nodes: # Token has expired as the node is not in history anymore
-				# TODO: REMOVE TOKEN FROM RDF STORE
 				Ros.Log(f"KILLED token {tokens[i]['id']} with path:", tokens[i]['path'])
 				tokens.pop(i)
 				i -= 1
@@ -260,7 +259,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 		for nodeId in iGraph.nodes:
 			# Initial tokens are only created in shadow nodes
 			if cast(NodeId, nodeId).regionId.startswith("https://rezateshnizi.com/env/defintion/av"): continue
-			token = self.__createToken(None, [nodeId])
+			token = self.__createToken(None, [nodeId], attributes=iGraph.traversability(nodeId))
 			self.states[self.__start]["tokens"].append(token)
 			Ros.Log(f"Initialized Token {token['id']} with path", token['path'])
 		self.__updateStateLabel(self.__start)
@@ -295,7 +294,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			if len(self.states[state]["tokens"]) <= self.DOT_RENDER_MAX_TOKENS
 			for t in self.states[state]["tokens"]
 		]
-		fetchedAttrs = self.__fetchTokenAttributes(visibleIds) if visibleIds else {}
+		# fetchedAttrs = self.__fetchTokenAttributes(visibleIds) if visibleIds else {}
 		for state in self.states:
 			if len(self.states[state]["tokens"]) > self.DOT_RENDER_MAX_TOKENS:
 				d[state] = [{
@@ -308,7 +307,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 					d[state].append({
 						"id": t["id"],
 						"iGraphNode": repr(t["path"][-1]),
-						"attributes": repr(fetchedAttrs.get(t["id"], {})),
+						# "attributes": repr(fetchedAttrs.get(t["id"], {})),
 					})
 		return d
 
@@ -321,10 +320,11 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			return dumps({ "name": self.name, "svg": svg, "tokens": self.__tokensReportForDot() })
 
 	def render(self) -> None:
+		Ros.Log(f"Rendering {self.name}.", severity=Ros.LoggingSeverity.ERROR)
 		if self.__dotPublisher is None: return
 		dataStr = self.__prepareDot()
 		self.__dotPublisher.publish(Msgs.Std.String(data=dataStr))
-		# Ros.Log(f"Dot data sent for {self.name}.")
+		# Ros.Log(f"Dot data sent: {dataStr}.")
 		return
 
 PropositionalBA: TypeAlias = PropositionalBehaviorAutomaton
