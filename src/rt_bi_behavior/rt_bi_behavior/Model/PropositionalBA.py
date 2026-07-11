@@ -155,13 +155,12 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			for nId in token["path"]: visited.add(nId)
 			# BFS
 			extensions = iGraph.propagateOneStep(token["path"][-1], visited)
-			if len(extensions) == 0: self.__addToken(fromState, token)
-			producedChild = False
+			producedChild = False # If the token is not moving forward in the states, keep it at the current state.
 			for destination in extensions:
 				if destination in visited: continue
 				Ros.Log(
 					f"---> Evaluating Destination {destination} <==> Token {token['id']}",
-					iGraph.nodes[destination].get("traversability"),
+					# iGraph.nodes[destination].get("traversability"),
 					# severity=Ros.LoggingSeverity.ERROR
 				)
 				# Skip hop if token attributes don't satisfy the region's traversability constraints
@@ -192,7 +191,7 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 						Ros.Log(f"ACCEPTING {newToken['id']}", newToken["path"], severity=Ros.LoggingSeverity.ERROR)
 				else:
 					tokens.append(newToken)
-			if not producedChild and extensions: self.__addToken(fromState, token)
+			if not producedChild: self.__addToken(fromState, token)
 		return
 
 	def reduceUncertainty(self, state: str, iGraph: BehaviorIGraph) -> None:
@@ -320,7 +319,6 @@ class PropositionalBehaviorAutomaton(nx.DiGraph):
 			return dumps({ "name": self.name, "svg": svg, "tokens": self.__tokensReportForDot() })
 
 	def render(self) -> None:
-		Ros.Log(f"Rendering {self.name}.", severity=Ros.LoggingSeverity.ERROR)
 		if self.__dotPublisher is None: return
 		dataStr = self.__prepareDot()
 		self.__dotPublisher.publish(Msgs.Std.String(data=dataStr))
