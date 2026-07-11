@@ -162,8 +162,16 @@ class FusekiInterface:
 	__PROPERTY_PREFIX = "https://rezateshnizi.com/rt-bi-v2/property#"
 	__CLASS_PREFIX = "https://rezateshnizi.com/rt-bi-v2/class#"
 
+	def expandValueIri(self, attrName: str, value: str) -> str:
+		"""Expands a bare attribute value to its full IRI in angle brackets,
+		mirroring how insertToken serializes discrete values. Values that are
+		already absolute IRIs are wrapped as-is."""
+		if attrName in self.__VALUE_IRI_PREFIXES:
+			return f"<{self.__VALUE_IRI_PREFIXES[attrName]}{value}>"
+		return f"<{value}>"
+
 	def __sendUpdate(self, update: str) -> None:
-		Ros.Log(f"Sending Update to Fuseki", [update])
+		Ros.Log(f"Sending Update to Fuseki\n{update}")
 		response = requests.post(self.__SPARQL_URL, data={ "update": update })
 		response.raise_for_status()
 
@@ -188,10 +196,7 @@ class FusekiInterface:
 				triples.append(f"\t{bnode} a <{self.__CLASS_PREFIX}DiscreteAttribute> .")
 				for dv in attr.discrete_values:
 					if not dv: continue
-					if attr.name in self.__VALUE_IRI_PREFIXES:
-						valueIri = f"<{self.__VALUE_IRI_PREFIXES[attr.name]}{dv}>"
-					else:
-						valueIri = f"<{dv}>"
+					valueIri = self.expandValueIri(attr.name, dv)
 					triples.append(f"\t{bnode} <{self.__PROPERTY_PREFIX}discrete_value> {valueIri} .")
 			elif attr.kind == "ranged":
 				triples.append(f"\t{tokenIri} {propIri} {bnode} .")

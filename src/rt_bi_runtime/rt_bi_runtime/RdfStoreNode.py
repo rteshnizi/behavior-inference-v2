@@ -88,7 +88,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 			"transition_grammar_dir": StrParser[_Parameters](self, "transition_grammar_dir"),
 			"transition_grammar_file": StrParser[_Parameters](self, "transition_grammar_file"),
 		}
-		newKw = { "node_name": "dd_rdf", "loggingSeverity": Ros.LoggingSeverity.WARN, **kwArgs}
+		newKw = { "node_name": "dd_rdf", "loggingSeverity": Ros.LoggingSeverity.INFO, **kwArgs}
 		DataDictionaryNode.__init__(self, parsers, **newKw)
 		ColdStartable.__init__(self)
 		self.__baseDir = get_package_share_directory(package_name)
@@ -314,7 +314,7 @@ class RdfStoreNode(ColdStartable, DataDictionaryNode[_Parameters]):
 					.replace("# OVERLAP_FILTER #", overlap_filter)
 				)
 			else:
-				allowed_iris = " ".join(f"<{val}>" for val in attr.discrete_values)
+				allowed_iris = " ".join(self.__httpInterface.expandValueIri(name, val) for val in attr.discrete_values)
 				block = (discreteTemplate
 					.replace("# ATTR_NAME #", name)
 					.replace("# ATTR_VAR #", v)
